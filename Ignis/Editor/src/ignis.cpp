@@ -1,13 +1,17 @@
 ﻿#include "ignis.hpp"
 
+#include "imgui.h"
+
 IgnisEditor::IgnisEditor()
 	: Application("Ignis")
 {
 	m_window = Window(m_name, 1280, 720);
 	m_window.set_event_callback(BIND_CLASS_EVENT_FN(IgnisEditor::on_event));
 
-	uint32_t vertex_shader = Shader::create_shader("Resources/Shaders/default.vert.glsl", SHADER_TYPE_VERTEX);
-	uint32_t fragment_shader = Shader::create_shader("Resources/Shaders/default.frag.glsl", SHADER_TYPE_FRAGMENT);
+	m_imgui_layer = ImGuiLayer(&m_window);
+
+	u32 vertex_shader = Shader::create_shader("Resources/Shaders/default.vert.glsl", SHADER_TYPE_VERTEX);
+	u32 fragment_shader = Shader::create_shader("Resources/Shaders/default.frag.glsl", SHADER_TYPE_FRAGMENT);
 
 	m_shader.create_program();
 	m_shader.compile(vertex_shader);
@@ -23,11 +27,17 @@ void IgnisEditor::run()
 	{
 		m_window.poll_events();
 
-		f32 current_time = static_cast<f32>(SDL_GetTicks());
-		f32 delta_time = (current_time - last_frame_time) / 1000.0f;
+		const f32 current_time = static_cast<f32>(SDL_GetTicks());
+		const f32 delta_time = (current_time - last_frame_time) / 1000.0f;
 		last_frame_time = current_time;
 
 		on_update(delta_time);
+
+		{
+			m_imgui_layer.begin_render();
+			on_gui_render(delta_time);
+			m_imgui_layer.end_render();
+		}
 
 		m_window.swap_buffers();
 	}
@@ -35,6 +45,7 @@ void IgnisEditor::run()
 
 void IgnisEditor::on_event(Event &event)
 {
+
 }
 
 void IgnisEditor::on_update(f32 delta_time)
@@ -45,6 +56,11 @@ void IgnisEditor::on_update(f32 delta_time)
 	m_shader.use();
 	m_shader.set_uniform_vec3("u_color", glm::vec3(1.0f, 0.0f, 1.0f));
 	glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void IgnisEditor::on_gui_render(f32 delta_time)
+{
+	ImGui::ShowDemoWindow();
 }
 
 void IgnisEditor::destroy()

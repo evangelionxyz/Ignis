@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 #define KEY_EXTENDED_MASK          (1u << 29)
 #define KEY_SCANCODE_MASK          (1u << 30)
 #define KEY_SCANCODE_TO_KEYCODE(X) (X | KEY_SCANCODE_MASK)
@@ -262,24 +260,24 @@
 #define KEY_LHYPER                 0x20000006u /**< Extended key Left Hyper */
 #define KEY_RHYPER                 0x20000007u /**< Extended key Right Hyper */
 
-#define KMOD_NONE   0x0000u /**< no modifier is applicable. */
-#define KMOD_LSHIFT 0x0001u /**< the left Shift key is down. */
-#define KMOD_RSHIFT 0x0002u /**< the right Shift key is down. */
-#define KMOD_LEVEL5 0x0004u /**< the Level 5 Shift key is down. */
-#define KMOD_LCTRL  0x0040u /**< the left Ctrl (Control) key is down. */
-#define KMOD_RCTRL  0x0080u /**< the right Ctrl (Control) key is down. */
-#define KMOD_LALT   0x0100u /**< the left Alt key is down. */
-#define KMOD_RALT   0x0200u /**< the right Alt key is down. */
-#define KMOD_LGUI   0x0400u /**< the left GUI key (often the Windows key) is down. */
-#define KMOD_RGUI   0x0800u /**< the right GUI key (often the Windows key) is down. */
-#define KMOD_NUM    0x1000u /**< the Num Lock key (may be located on an extended keypad) is down. */
-#define KMOD_CAPS   0x2000u /**< the Caps Lock key is down. */
-#define KMOD_MODE   0x4000u /**< the !AltGr key is down. */
-#define KMOD_SCROLL 0x8000u /**< the Scroll Lock key is down. */
-#define KMOD_CTRL   (KMOD_LCTRL | KMOD_RCTRL)   /**< Any Ctrl key is down. */
-#define KMOD_SHIFT  (KMOD_LSHIFT | KMOD_RSHIFT) /**< Any Shift key is down. */
-#define KMOD_ALT    (KMOD_LALT | KMOD_RALT)     /**< Any Alt key is down. */
-#define KMOD_GUI    (KMOD_LGUI | KMOD_RGUI)     /**< Any GUI key is down. */
+#define KEY_MOD_NONE   0x0000u /**< no modifier is applicable. */
+#define KEY_MOD_LSHIFT 0x0001u /**< the left Shift key is down. */
+#define KEY_MOD_RSHIFT 0x0002u /**< the right Shift key is down. */
+#define KEY_MOD_LEVEL5 0x0004u /**< the Level 5 Shift key is down. */
+#define KEY_MOD_LCTRL  0x0040u /**< the left Ctrl (Control) key is down. */
+#define KEY_MOD_RCTRL  0x0080u /**< the right Ctrl (Control) key is down. */
+#define KEY_MOD_LALT   0x0100u /**< the left Alt key is down. */
+#define KEY_MOD_RALT   0x0200u /**< the right Alt key is down. */
+#define KEY_MOD_LGUI   0x0400u /**< the left GUI key (often the Windows key) is down. */
+#define KEY_MOD_RGUI   0x0800u /**< the right GUI key (often the Windows key) is down. */
+#define KEY_MOD_NUM    0x1000u /**< the Num Lock key (may be located on an extended keypad) is down. */
+#define KEY_MOD_CAPS   0x2000u /**< the Caps Lock key is down. */
+#define KEY_MOD_MODE   0x4000u /**< the !AltGr key is down. */
+#define KEY_MOD_SCROLL 0x8000u /**< the Scroll Lock key is down. */
+#define KEY_MOD_CTRL   (KEY_MOD_LCTRL | KEY_MOD_RCTRL)   /**< Any Ctrl key is down. */
+#define KEY_MOD_SHIFT  (KEY_MOD_LSHIFT | KEY_MOD_RSHIFT) /**< Any Shift key is down. */
+#define KEY_MOD_ALT    (KEY_MOD_LALT | KEY_MOD_RALT)     /**< Any Alt key is down. */
+#define KEY_MOD_GUI    (KEY_MOD_LGUI | KEY_MOD_RGUI)     /**< Any GUI key is down. */
 
 using KeyCode = u32;
 using KeyModCode = u16;
@@ -408,17 +406,17 @@ namespace Key {
 }
 namespace KeyMod {
     enum : KeyModCode {
-        None = KMOD_NONE,
-        Shift = KMOD_SHIFT,
-        Control = KMOD_CTRL,
-        LeftShift = KMOD_LSHIFT,
-        LeftControl = KMOD_LCTRL,
-        LeftAlt = KMOD_LALT,
-        LeftSuper = KMOD_LGUI,
-        RightShift = KMOD_RSHIFT,
-        RightControl = KMOD_RCTRL,
-        RightAlt = KMOD_RALT,
-        RightSuper = KMOD_RGUI,
-        Super = KMOD_GUI,
+        None         = KEY_MOD_NONE,
+        Shift        = KEY_MOD_SHIFT,
+        Control      = KEY_MOD_CTRL,
+        LeftShift    = KEY_MOD_LSHIFT,
+        LeftControl  = KEY_MOD_LCTRL,
+        LeftAlt      = KEY_MOD_LALT,
+        LeftSuper    = KEY_MOD_LGUI,
+        RightShift   = KEY_MOD_RSHIFT,
+        RightControl = KEY_MOD_RCTRL,
+        RightAlt     = KEY_MOD_RALT,
+        RightSuper   = KEY_MOD_RGUI,
+        Super        = KEY_MOD_GUI,
     };
 }

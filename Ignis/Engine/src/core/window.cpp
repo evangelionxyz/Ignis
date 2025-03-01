@@ -44,7 +44,12 @@ void Window::poll_events()
     SDL_Event event;
     SDL_PollEvent(&event);
 
-    switch(event.type) {
+    if (m_gui_event_callback)
+    {
+        m_gui_event_callback(&event);
+    }
+
+    switch (event.type) {
     case SDL_EVENT_QUIT:
     {
         m_is_running = false;
@@ -186,6 +191,11 @@ void Window::set_event_callback(const EventCallback& callback)
 	m_event_callback = callback;
 }
 
+void Window::set_gui_event_callback(const GuiEventCallback &callback)
+{
+    m_gui_event_callback = callback;
+}
+
 void Window::minimize()
 {
     SDL_MinimizeWindow(m_window);
@@ -204,6 +214,11 @@ void Window::get_size(i32* width, i32* height)
 void Window::get_position(i32* pos_x, i32* pos_y)
 {
 	SDL_GetWindowPosition(m_window, pos_x, pos_y);
+}
+
+void Window::get_framebuffer_size(i32 *width, i32 *height)
+{
+    SDL_GetWindowSizeInPixels(m_window, width, height);
 }
 
 const char* Window::get_title()

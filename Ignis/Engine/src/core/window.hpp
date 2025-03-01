@@ -8,15 +8,18 @@
 #include <string>
 #include <functional>
 
-using EventCallback = std::function<void(Event &)>;
+
 
 class Window : public Object
 {
+private:
+	using EventCallback = std::function<void(Event &)>;
+	using GuiEventCallback = std::function<void(const SDL_Event *)>;
 public:
 	Window() = default;
 	Window(const std::string& title, int width, int height);
 
-	virtual void destroy() override;
+	void destroy() override;
 
 	void poll_events();
 	void swap_buffers();
@@ -28,10 +31,13 @@ public:
 	void set_icon(unsigned char* data, i32 width, i32 height);
 
 	void set_event_callback(const EventCallback& callback);
+	void set_gui_event_callback(const GuiEventCallback& callback);
+
 	void minimize();
 	void maximize();
 	void get_size(i32 *width, i32 *height);
 	void get_position(i32 *pos_x, i32 *pos_y);
+	void get_framebuffer_size(i32 *width, i32 *height);
 
 	const char* get_title();
 
@@ -48,4 +54,5 @@ private:
 	const char* m_title;
 
 	EventCallback m_event_callback;
+	GuiEventCallback m_gui_event_callback;
 };
