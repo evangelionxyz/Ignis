@@ -63,7 +63,7 @@ void Camera::on_event(Event &e) {
 
 bool Camera::on_mouse_scroll_event(MouseScrolledEvent &e) 
 {
-    m_zoom += e.get_offset_y() * 0.1f;
+    m_zoom -= e.get_offset_y() * 0.1f;
     return false;
 }
 

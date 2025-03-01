@@ -27,4 +27,6 @@ private:
     Ref<GLVertexBuffer> m_vertex_buffer;
 
     glm::ivec2 m_viewport_size;
+
+    bool is_viewport_hovered = false, is_viewport_active = false;
 };

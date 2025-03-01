@@ -102,11 +102,15 @@ void IgnisEditor::run()
 
 void IgnisEditor::on_event(Event &event)
 {
-	m_camera.on_event(event);
+	if (is_viewport_hovered)
+		m_camera.on_event(event);
 }
 
 void IgnisEditor::draw_viewport() {
-	ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoScrollbar);
+	ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	is_viewport_hovered = ImGui::IsWindowHovered();
+	is_viewport_active = ImGui::IsWindowFocused();
+
 	const ImVec2 viewport_size = ImGui::GetWindowSize();
 	m_viewport_size = {static_cast<i32>(viewport_size.x), static_cast<i32>(viewport_size.y)};
 	const ImTextureID viewport_id = m_viewport_framebuffer.get_id();
