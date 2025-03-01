@@ -1,0 +1,9 @@
+[submodule "Ignis/ThirdParty/SDL3"]
+	path = Ignis/ThirdParty/SDL3
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "Ignis/ThirdParty/SPDLOG"]
+	path = Ignis/ThirdParty/SPDLOG
+	url = https://github.com/gabime/spdlog.git
+[submodule "Ignis/ThirdParty/IMGUI"]
+	path = Ignis/ThirdParty/IMGUI
+	url = https://github.com/ocornut/imgui.git
