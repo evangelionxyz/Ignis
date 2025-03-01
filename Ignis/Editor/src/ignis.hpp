@@ -10,8 +10,12 @@
 #include <core/input/key_event.hpp>
 #include <core/input/app_event.hpp>
 #include <core/input/mouse_event.hpp>
-
-#include <renderer/shader.hpp>
+#include <core/logger.hpp>
+#include <renderer/renderer.hpp>
+#include <renderer/gl/gl_shader.hpp>
+#include <renderer/gl/gl_framebuffer.hpp>
+#include <renderer/camera.hpp>
+#include <core/imgui_layer.hpp>
 #include <core/imgui_layer.hpp>
 
 #include <SDL3/SDL_gpu.h>
@@ -33,7 +37,15 @@ private:
     void on_update(f32 delta_time);
     void on_gui_render(f32 delta_time);
 
-    Window m_window;
+    void draw_viewport();
+    void resize();
+
+    GLFramebuffer m_viewport_framebuffer;
     ImGuiLayer m_imgui_layer;
-    Shader m_shader;
+    Window m_window;
+    GLShader m_shader;
+    Camera m_camera;
+    u32 m_vao;
+
+    glm::ivec2 m_viewport_size;
 };

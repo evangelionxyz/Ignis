@@ -17,6 +17,7 @@ ImGuiLayer::ImGuiLayer(Window *window)
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     io.ConfigViewportsNoDecoration = false;
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
 
     ImGui_ImplSDL3_InitForOpenGL(m_window->get_native_window(), m_window->get_gl_context());
     ImGui_ImplOpenGL3_Init("#version 450");

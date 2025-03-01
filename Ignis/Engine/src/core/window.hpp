@@ -8,8 +8,6 @@
 #include <string>
 #include <functional>
 
-
-
 class Window : public Object
 {
 private:
@@ -17,7 +15,7 @@ private:
 	using GuiEventCallback = std::function<void(const SDL_Event *)>;
 public:
 	Window() = default;
-	Window(const std::string& title, int width, int height);
+	Window(const std::string& title, i32 width, i32 height);
 
 	void destroy() override;
 

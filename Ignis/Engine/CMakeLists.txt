@@ -7,8 +7,15 @@ set(IGNIS_ENGINE_SOURCE
   src/core/imgui_layer.hpp
   src/renderer/camera.cpp
   src/renderer/camera.hpp
-  src/renderer/shader.cpp
-  src/renderer/shader.hpp
+  src/renderer/gl/buffer.hpp
+  src/renderer/gl/gl_shader.cpp
+  src/renderer/gl/gl_shader.hpp
+  src/renderer/gl/gl_framebuffer.cpp
+  src/renderer/gl/gl_framebuffer.hpp
+  src/core/logger.hpp
+  src/core/logger.cpp
+  src/renderer/renderer.hpp
+  src/renderer/renderer.cpp
 )
 
 include_directories(IgnisEditor ${INCLUDE_DIRS})
@@ -18,9 +25,14 @@ set_target_properties(Ignis PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(Ignis PRIVATE SDL3::SDL3 glm glad imgui)
 
 add_custom_command(
-	TARGET Ignis POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  ${CMAKE_SOURCE_DIR}/Ignis/Resources ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Resources
+    TARGET Ignis POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/Ignis/Resources ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Resources
+)
+
+target_compile_definitions(Ignis PRIVATE
+    $<$<CONFIG:Debug>:DEBUG_BUILD>
+    $<$<CONFIG:Release>:RELEASE_BUILD>
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)

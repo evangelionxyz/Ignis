@@ -16,7 +16,7 @@
 #define API __declspec(dllimport)
 #endif
 
-#ifdef DEBUG_
+#ifdef DEBUG_BUILD
 #define ENABLE_ASSERTS
 #ifdef _WIN32
 #define DEBUGBREAK() __debugbreak()

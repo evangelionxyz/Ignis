@@ -66,7 +66,7 @@ class KeyTypedEvent : public KeyEvent
 {
 public:
 	KeyTypedEvent(const KeyCode keycode)
-		: KeyEvent(keycode, KEY_UNKNOWN) {
+		: KeyEvent(keycode, IGN_KEY_UNKNOWN) {
 	}
 
 	std::string to_string() const override

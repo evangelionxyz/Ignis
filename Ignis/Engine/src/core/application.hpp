@@ -18,7 +18,6 @@ public:
     {}
 
     virtual void run() {}
-    virtual void on_event(Event& event) {}
 
 protected:
     std::string m_name;

@@ -8,31 +8,72 @@
 #include "input/key_event.hpp"
 #include "input/app_event.hpp"
 
+#include "renderer/renderer.hpp"
+
 #include <glad/gl.h>
 
-Window::Window(const std::string& title, int width, int height)
+Window::Window(const std::string& title, i32 width, i32 height)
     : m_title(title.c_str()), m_width(width), m_height(height)
 {
 	SDL_InitFlags init_flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_CAMERA | SDL_INIT_AUDIO | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD;
 	SDL_Init(init_flags);
 
-	SDL_WindowFlags window_flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL;
+    SDL_WindowFlags window_flags = SDL_WINDOW_RESIZABLE;
+    switch (Renderer::get_api()) {
+        case RendererAPI::OPENGL: {
+            window_flags |= SDL_WINDOW_OPENGL;
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); // Core profile required for RenderDoc
+            //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+            //SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+            break;
+        }
+        case RendererAPI::VULKAN: {
+            window_flags |= SDL_WINDOW_VULKAN;
+            break;
+        }
+    }
 
 	m_window = SDL_CreateWindow(title.c_str(), width, height, window_flags);
+    LOG_ASSERT(m_window, "Failed to create window");
+
+    LOG_INFO("Window created");
+
 	SDL_ShowWindow(m_window);
 	SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
-	// Load OpenGL
-	m_gl_context = SDL_GL_CreateContext(m_window);
-	gladLoadGL(SDL_GL_GetProcAddress);
+    switch (Renderer::get_api()) {
+        case RendererAPI::OPENGL: {
+            // Load OpenGL
+            m_gl_context = SDL_GL_CreateContext(m_window);
+            if (!m_gl_context) {
+                LOG_ERROR("Failed to initialize OpenGL Context");
+                return;
+            }
 
+            gladLoadGL(SDL_GL_GetProcAddress);
+            const char *gl_version = reinterpret_cast<const char *>(glGetString(GL_VERSION));
+            const char *gl_vendor = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
+            LOG_INFO("OpenGL Info   : ");
+            LOG_INFO("    version   : {}", gl_version);
+            LOG_INFO("    vendor    : {}", gl_vendor);
+            break;
+        }
+        case RendererAPI::VULKAN: {
+            break;
+        }
+    }
 	m_is_running = true;
 }
 
 void Window::destroy()
 {
-    SDL_GL_DestroyContext(m_gl_context);
-	SDL_DestroyWindow(m_window);
+    if (m_gl_context) {
+        SDL_GL_DestroyContext(m_gl_context);
+    }
+
+    SDL_DestroyWindow(m_window);
 	SDL_Quit();
 
 	m_window = nullptr;
@@ -132,7 +173,15 @@ void Window::poll_events()
 
 void Window::swap_buffers()
 {
-	SDL_GL_SwapWindow(m_window);
+    switch (Renderer::get_api()) {
+        case RendererAPI::OPENGL: {
+            SDL_GL_SwapWindow(m_window);
+            break;
+        }
+        case RendererAPI::VULKAN: {
+            break;
+        }
+    }
 }
 
 bool Window::is_running()

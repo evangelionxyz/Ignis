@@ -32,8 +32,9 @@ if (NOT glm_FOUND)
 	endif()
 endif()
 
-#vulkan
 if (WIN32)
+	add_definitions(-DPLATFORM_WINDOWS)
+
 	if(NOT DEFINED ENV{VULKAN_SDK})
 		message(FATAL_ERROR
 				">> VULKAN_SDK environment variable not defined. Please install the Vulkan SDK and set the environment variable.")
@@ -63,6 +64,8 @@ elseif (UNIX AND NOT APPLE)
 	else()
 		message(">> Platform: LINUX")
 	endif()
+
+	add_definitions(-DPLATFORM_LINUX)
 endif()
 
 project ("Ignis")
@@ -78,6 +81,7 @@ set(INCLUDE_DIRS
 		${THIRDPARTY_DIR}/SDL3/include
 		${THIRDPARTY_DIR}/IMGUI
 		${THIRDPARTY_DIR}/STB
+		${THIRDPARTY_DIR}/SPDLOG/include
 		${VULKAN_INCLUDE_DIR}
 )
 
@@ -88,5 +92,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR}/archive)
 add_subdirectory ("Ignis/Editor/")
 add_subdirectory ("Ignis/Engine/")
 add_subdirectory("Ignis/ThirdParty/SDL3")
+add_subdirectory("Ignis/ThirdParty/SPDLOG")
 
 include("Ignis/ThirdParty/THIRDPARTY.cmake")

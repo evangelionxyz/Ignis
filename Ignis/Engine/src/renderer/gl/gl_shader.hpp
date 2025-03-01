@@ -1,14 +1,14 @@
-#include "core/object.hpp"
+#include "../../core/object.hpp"
 
-#include <glad/gl.h>
+#include <../../../../../cmake-build-debug/gladsources/glad/include/glad/gl.h>
 #include <stdint.h>
 #include <string>
 
 #include <vector>
 #include <unordered_map>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <../../../../../cmake-build-debug/_deps/glm-src/glm/glm.hpp>
+#include <../../../../../cmake-build-debug/_deps/glm-src/glm/gtc/matrix_transform.hpp>
+#include <../../../../../cmake-build-debug/_deps/glm-src/glm/gtc/type_ptr.hpp>
 
 enum ShaderType
 {
@@ -32,10 +32,10 @@ static GLenum get_gl_shader_type(ShaderType shader_type)
     return SHADER_TYPE_UNKNOWN;
 }
 
-class Shader : public Object
+class GLShader : public Object
 {
 public:
-    Shader() = default;
+    GLShader() = default;
 
     static uint32_t create_shader(const std::string &filepath, ShaderType shader_type);
 

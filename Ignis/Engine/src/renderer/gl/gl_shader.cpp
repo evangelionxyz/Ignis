@@ -1,14 +1,16 @@
-#include "shader.hpp"
+#include "gl_shader.hpp"
 
 #include <core/utils.hpp>
+#include <core/logger.hpp>
 #include <iostream>
 
-void Shader::create_program()
+void GLShader::create_program()
 {
     m_program = glCreateProgram();
+    LOG_TRACE("[Shader] program created");
 }
 
-uint32_t Shader::create_shader(const std::string &filepath, ShaderType shader_type)
+uint32_t GLShader::create_shader(const std::string &filepath, ShaderType shader_type)
 {
     std::string shader_source = read_file(filepath);
     uint32_t shader = glCreateShader(get_gl_shader_type(shader_type));
@@ -18,7 +20,7 @@ uint32_t Shader::create_shader(const std::string &filepath, ShaderType shader_ty
     return shader;
 }
 
-void Shader::compile(uint32_t shader)
+void GLShader::compile(uint32_t shader)
 {
     glCompileShader(shader);
 
@@ -31,9 +33,8 @@ void Shader::compile(uint32_t shader)
 
         char buffer[256];
         glGetShaderInfoLog(shader, max_length, &max_length, buffer);
-        std::cout << buffer << '\n';
+        LOG_ERROR("Failed to compile shader: {}", buffer);
         glDeleteShader(shader);
-
         return;
     }
 
@@ -42,7 +43,7 @@ void Shader::compile(uint32_t shader)
     m_shaders.push_back(shader);
 }
 
-void Shader::link()
+void GLShader::link()
 {
     glLinkProgram(m_program);
 
@@ -55,6 +56,7 @@ void Shader::link()
 
         char buffer[256];
         glGetProgramInfoLog(m_program, max_length, &max_length, buffer);
+        LOG_ERROR("Failed to link shader: {}", buffer);
 
         glDeleteProgram(m_program);
 
@@ -67,7 +69,7 @@ void Shader::link()
     }
 }
 
-void Shader::destroy_shaders()
+void GLShader::destroy_shaders()
 {
     for (auto &shader : m_shaders)
     {
@@ -77,50 +79,52 @@ void Shader::destroy_shaders()
     m_shaders.clear();
 }
 
-void Shader::destroy()
+void GLShader::destroy()
 {
     destroy_shaders();
 
-    if (m_program != 0)
+    if (m_program != 0) {
         glDeleteProgram(m_program);
+        LOG_TRACE("[Shader] Program {} destroyed", m_program);
+    }
 }
 
-void Shader::use()
+void GLShader::use()
 {
     glUseProgram(m_program);
 }
 
-void Shader::set_uniform_int(const std::string &name, const i32 value, i32 count)
+void GLShader::set_uniform_int(const std::string &name, const i32 value, i32 count)
 {
     glUniform1iv(get_uniform_location(name), count, &value);
 }
 
-void Shader::set_uniform_float(const std::string &name, const f32 value, i32 count)
+void GLShader::set_uniform_float(const std::string &name, const f32 value, i32 count)
 {
     glUniform1fv(get_uniform_location(name), count, &value);
 }
 
-void Shader::set_uniform_vec2(const std::string &name, const glm::vec2 &value, i32 count)
+void GLShader::set_uniform_vec2(const std::string &name, const glm::vec2 &value, i32 count)
 {
     glUniform2fv(get_uniform_location(name), count, glm::value_ptr(value));
 }
 
-void Shader::set_uniform_vec3(const std::string &name, const glm::vec3 &value, i32 count)
+void GLShader::set_uniform_vec3(const std::string &name, const glm::vec3 &value, i32 count)
 {
     glUniform3fv(get_uniform_location(name), count, glm::value_ptr(value));
 }
 
-void Shader::set_uniform_vec4(const std::string &name, const glm::vec4 &value, i32 count)
+void GLShader::set_uniform_vec4(const std::string &name, const glm::vec4 &value, i32 count)
 {
     glUniform4fv(get_uniform_location(name), count, glm::value_ptr(value));
 }
 
-void Shader::set_uniform_mat4(const std::string &name, const glm::mat4 &value, i32 count)
+void GLShader::set_uniform_mat4(const std::string &name, const glm::mat4 &value, i32 count)
 {
-    glUniformMatrix4fv(get_uniform_location(name), count, false, &value[0][0]);
+    glUniformMatrix4fv(get_uniform_location(name), count, false, glm::value_ptr(value));
 }
 
-i32 Shader::get_uniform_location(const std::string &name)
+i32 GLShader::get_uniform_location(const std::string &name)
 {
     if (m_uniform_locations.contains(name))
         return m_uniform_locations[name];
@@ -131,6 +135,7 @@ i32 Shader::get_uniform_location(const std::string &name)
         m_uniform_locations[name] = location;
         return location;
     }
-    
+
+    LOG_ERROR("[Shader] Failed to get uniform '{}'", name);
     return -1;
 }
