@@ -29,8 +29,28 @@ IgnisEditor::IgnisEditor()
 	m_camera = Camera(CAMERA_TYPE_2D, spec.width, spec.height, {0.0f, 0.0f, 1.0f});
 	m_camera.resize({spec.width, spec.height});
 
-	glCreateVertexArrays(1, &m_vao);
-	glBindVertexArray(m_vao);
+	f32 vertices[] = {
+		-0.5f, -0.5f,
+		-0.5f,  0.5f,
+		 0.5f,  0.5f,
+		 0.5f, -0.5f,
+	};
+
+	u32 indices[] =
+	{
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	m_vertex_array = GLVertexArray::create();
+	m_vertex_buffer = GLVertexBuffer::create(vertices, sizeof(vertices));
+	m_vertex_buffer->set_layout({
+		{ShaderDataType_Float2, "position"}
+	});
+	m_vertex_array->add_vertex_buffer(m_vertex_buffer);
+
+	Ref<GLIndexBuffer> index_buffer = GLIndexBuffer::create(indices, sizeof(indices) / sizeof(u32));
+	m_vertex_array->set_index_buffer(index_buffer);
 }
 
 void IgnisEditor::run()
@@ -40,7 +60,6 @@ void IgnisEditor::run()
 	while (m_window.is_running())
 	{
 		m_window.poll_events();
-
 
 		const f32 current_time = static_cast<f32>(SDL_GetTicks());
 		const f32 delta_time = (current_time - last_frame_time) / 1000.0f;
@@ -109,9 +128,11 @@ void IgnisEditor::on_update(f32 delta_time)
 
 	m_shader.use();
 	m_shader.set_uniform_mat4("u_view_projection", m_camera.get_view_projection());
-	glBindVertexArray(m_vao);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glBindVertexArray(0);
+
+	m_vertex_array->bind();
+	m_vertex_buffer->bind();
+	u32 count = m_vertex_array->get_index_buffer()->get_count();
+	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
 
 	GLFramebuffer::unbind();
 }
@@ -132,6 +153,9 @@ void IgnisEditor::resize() {
 
 void IgnisEditor::destroy()
 {
+	m_vertex_array->destroy();
+	m_vertex_array->destroy();
+
 	m_window.destroy();
 	m_shader.destroy();
 

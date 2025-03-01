@@ -4,10 +4,12 @@ set(IGNIS_ENGINE_SOURCE
   src/core/window.cpp
   src/core/window.hpp
   src/core/imgui_layer.cpp
+  src/core/input/input.cpp
+  src/core/input/input.hpp
   src/core/imgui_layer.hpp
   src/renderer/camera.cpp
   src/renderer/camera.hpp
-  src/renderer/gl/buffer.hpp
+  src/renderer/gl/gl_buffer.hpp
   src/renderer/gl/gl_shader.cpp
   src/renderer/gl/gl_shader.hpp
   src/renderer/gl/gl_framebuffer.cpp
@@ -16,6 +18,19 @@ set(IGNIS_ENGINE_SOURCE
   src/core/logger.cpp
   src/renderer/renderer.hpp
   src/renderer/renderer.cpp
+  src/scene/scene.cpp
+  src/scene/scene.hpp
+  src/scene/scene_manager.cpp
+  src/scene/scene_manager.hpp
+  src/renderer/gl/gl_vertex_array.cpp
+  src/renderer/gl/gl_vertex_array.hpp
+  src/renderer/gl/gl_vertex_buffer.cpp
+  src/renderer/gl/gl_vertex_buffer.hpp
+  src/renderer/gl/gl_index_buffer.cpp
+  src/renderer/gl/gl_index_buffer.hpp
+  src/math/math.hpp
+  src/math/math.cpp
+  src/ignis_engine.hpp
 )
 
 include_directories(IgnisEditor ${INCLUDE_DIRS})

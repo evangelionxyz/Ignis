@@ -1,7 +1,7 @@
 #include "camera.hpp"
 
-#include <core/input/key_event.hpp>
-
+#include "core/input/input.hpp"
+#include "core/input/key_event.hpp"
 #include "glm/gtx/quaternion.hpp"
 
 Camera::Camera(CameraType type, const f32 width, const f32 height,const glm::vec3 &position)
@@ -13,6 +13,26 @@ Camera::Camera(CameraType type, const f32 width, const f32 height,const glm::vec
 
 void Camera::on_update(f32 delta_time)
 {
+    if (Input::keycodes[Key::A])
+        m_position -= get_right() * m_zoom * delta_time;
+    else if (Input::keycodes[Key::D])
+        m_position += get_right() * m_zoom * delta_time;
+
+    if (Input::keycodes[Key::W])
+    {
+        if (m_type == CAMERA_TYPE_2D)
+            m_zoom -= m_zoom * delta_time;
+        else
+            m_position += get_forward() * delta_time;
+    }
+    else if (Input::keycodes[Key::S])
+    {
+        if (m_type == CAMERA_TYPE_2D)
+            m_zoom += m_zoom * delta_time;
+        else
+            m_position -= get_forward() * delta_time;
+    }
+
     update_view_projection();
 }
 
@@ -21,7 +41,7 @@ void Camera::update_view_projection() {
     {
         case CAMERA_TYPE_2D:
         {
-            const glm::vec2 ortho_size = {m_zoom * m_aspect_ratio / 2.0f, m_zoom / 2.0};
+            const glm::vec2 ortho_size = {m_zoom * m_aspect_ratio, m_zoom};
             m_projection_matrix = glm::ortho(-ortho_size.x, ortho_size.x, -ortho_size.y, ortho_size.y, 0.1f, 100.0f);
             break;
         }
@@ -38,14 +58,17 @@ void Camera::update_view_projection() {
 void Camera::on_event(Event &e) {
     EventDispatcher dispatcher(e);
     dispatcher.dispatch<KeyPressedEvent>(BIND_CLASS_EVENT_FN(Camera::on_key_pressed_event));
+    dispatcher.dispatch<MouseScrolledEvent>(BIND_CLASS_EVENT_FN(Camera::on_mouse_scroll_event));
 }
 
-bool Camera::on_mouse_scroll_event(MouseScrolledEvent &e) {
-    m_zoom += e.get_offset_x() * 0.01f;
+bool Camera::on_mouse_scroll_event(MouseScrolledEvent &e) 
+{
+    m_zoom += e.get_offset_y() * 0.1f;
     return false;
 }
 
-bool Camera::on_key_pressed_event(KeyPressedEvent &e) {
+bool Camera::on_key_pressed_event(KeyPressedEvent &e) 
+{
     return false;
 }
 
@@ -65,30 +88,37 @@ void Camera::set_zoom(f32 zoom)
     m_zoom = zoom;
 }
 
-const glm::mat4 &Camera::get_view_matrix() const {
+const glm::mat4 &Camera::get_view_matrix() const 
+{
     return m_view_matrix;
 }
 
-const glm::mat4 &Camera::get_projection_matrix() const {
+const glm::mat4 &Camera::get_projection_matrix() const 
+{
     return m_projection_matrix;
 }
 
-glm::mat4 Camera::get_view_projection() const {
+glm::mat4 Camera::get_view_projection() const 
+{
     return m_projection_matrix * m_view_matrix;
 }
 
-glm::vec3 Camera::get_position() const {
+glm::vec3 Camera::get_position() const 
+{
     return m_position;
 }
 
-glm::vec3 Camera::get_forward() const {
+glm::vec3 Camera::get_forward() const 
+{
     return glm::rotate(glm::quat({-m_pitch, -m_yaw, 0.0}), {0.0f, 0.0f, -1.0f});
 }
 
-glm::vec3 Camera::get_up() const {
+glm::vec3 Camera::get_up() const 
+{
     return glm::rotate(glm::quat({-m_pitch, -m_yaw, 0.0}), {0.0f, 1.0f, 0.0f});
 }
 
-glm::vec3 Camera::get_right() const {
+glm::vec3 Camera::get_right() const 
+{
     return glm::rotate(glm::quat({-m_pitch, -m_yaw, 0.0}), {1.0f, 0.0f, 0.0f});
 }

@@ -7,6 +7,7 @@
 #include "input/mouse_event.hpp"
 #include "input/key_event.hpp"
 #include "input/app_event.hpp"
+#include "input/input.hpp"
 
 #include "renderer/renderer.hpp"
 
@@ -119,12 +120,13 @@ void Window::poll_events()
         bool pressed = (event.key.type == SDL_EVENT_KEY_DOWN);
         if (pressed)
         {
-
+            Input::keycodes[event.key.key] = true;
             KeyPressedEvent ev(event.key.key, event.key.mod, 0);
             m_event_callback(ev);
         }
         else
         {
+            Input::keycodes[event.key.key] = false;
             KeyReleasedEvent ev(event.key.key, event.key.mod);
             m_event_callback(ev);
         }
@@ -138,12 +140,14 @@ void Window::poll_events()
     }
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
     {
+        Input::mousecodes[event.button.button] = true;
         MouseButtonPressedEvent ev(event.button.button);
         m_event_callback(ev);
         break;
     }
     case SDL_EVENT_MOUSE_BUTTON_UP:
     {
+        Input::mousecodes[event.button.button] = false;
         MouseButtonReleasedEvent ev(event.button.button);
         m_event_callback(ev);
         break;

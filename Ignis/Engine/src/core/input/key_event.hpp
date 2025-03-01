@@ -29,7 +29,7 @@ public:
 		: KeyEvent(keycode, keymod), m_repeat_count(repeatCount) {
 	}
 
-	u16 GetRepeatCount() const { return m_repeat_count; }
+	u16 get_repeat_count() const { return m_repeat_count; }
 
 	std::string to_string() const override
 	{

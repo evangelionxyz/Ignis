@@ -1,14 +1,14 @@
-#include "../../core/object.hpp"
+#include "core/object.hpp"
 
-#include <../../../../../cmake-build-debug/gladsources/glad/include/glad/gl.h>
+#include <glad/gl.h>
 #include <stdint.h>
 #include <string>
 
 #include <vector>
 #include <unordered_map>
-#include <../../../../../cmake-build-debug/_deps/glm-src/glm/glm.hpp>
-#include <../../../../../cmake-build-debug/_deps/glm-src/glm/gtc/matrix_transform.hpp>
-#include <../../../../../cmake-build-debug/_deps/glm-src/glm/gtc/type_ptr.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 enum ShaderType
 {
