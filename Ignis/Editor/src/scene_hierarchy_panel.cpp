@@ -51,8 +51,7 @@ void SceneHierarchyPanel::draw_entity_node(const entt::entity entity, i32 index)
     ID &id_comp = m_scene->entity_get_component<ID>(entity);
 
     const ImGuiTreeNodeFlags flags = (m_selected_entity == entity ? ImGuiTreeNodeFlags_Selected : 0)
-        | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow
-        | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
+        | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
 
     auto _id = reinterpret_cast<void*>(static_cast<u64>(static_cast<u32>(entity)));
     const bool opened = ImGui::TreeNodeEx(_id, flags, id_comp.name.c_str());

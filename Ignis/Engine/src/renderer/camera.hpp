@@ -43,7 +43,7 @@ public:
 
 private:
     CameraType m_type;
-    f32 m_zoom = 8.0f, m_aspect_ratio = 1.0f;
+    f32 m_zoom = 3.0f, m_aspect_ratio = 1.0f;
     f32 m_yaw = 0.0f, m_pitch = 0.0f;
 
     glm::vec2 m_size;

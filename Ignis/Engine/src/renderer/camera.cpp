@@ -4,6 +4,8 @@
 #include "core/input/key_event.hpp"
 #include "glm/gtx/quaternion.hpp"
 
+#include <imgui.h>
+
 Camera::Camera(CameraType type, const f32 width, const f32 height,const glm::vec3 &position)
     : m_type(type), m_position(position)
 {
@@ -13,25 +15,29 @@ Camera::Camera(CameraType type, const f32 width, const f32 height,const glm::vec
 
 void Camera::on_update(f32 delta_time)
 {
-    if (Input::keycodes[Key::A])
-        m_position -= get_right() * m_zoom * delta_time;
-    else if (Input::keycodes[Key::D])
-        m_position += get_right() * m_zoom * delta_time;
+    if (!ImGui::GetIO().WantTextInput)
+    {
+        if (Input::keycodes[Key::A])
+            m_position -= get_right() * m_zoom * delta_time;
+        else if (Input::keycodes[Key::D])
+            m_position += get_right() * m_zoom * delta_time;
 
-    if (Input::keycodes[Key::W])
-    {
-        if (m_type == CAMERA_TYPE_2D)
-            m_zoom -= m_zoom * delta_time;
-        else
-            m_position += get_forward() * delta_time;
+        if (Input::keycodes[Key::W])
+        {
+            if (m_type == CAMERA_TYPE_2D)
+                m_zoom -= m_zoom * delta_time;
+            else
+                m_position += get_forward() * delta_time;
+        }
+        else if (Input::keycodes[Key::S])
+        {
+            if (m_type == CAMERA_TYPE_2D)
+                m_zoom += m_zoom * delta_time;
+            else
+                m_position -= get_forward() * delta_time;
+        }
     }
-    else if (Input::keycodes[Key::S])
-    {
-        if (m_type == CAMERA_TYPE_2D)
-            m_zoom += m_zoom * delta_time;
-        else
-            m_position -= get_forward() * delta_time;
-    }
+    
 
     update_view_projection();
 }
@@ -55,7 +61,8 @@ void Camera::update_view_projection() {
     m_view_matrix = glm::inverse(m_view_matrix);
 }
 
-void Camera::on_event(Event &e) {
+void Camera::on_event(Event &e) 
+{
     EventDispatcher dispatcher(e);
     dispatcher.dispatch<KeyPressedEvent>(BIND_CLASS_EVENT_FN(Camera::on_key_pressed_event));
     dispatcher.dispatch<MouseScrolledEvent>(BIND_CLASS_EVENT_FN(Camera::on_mouse_scroll_event));

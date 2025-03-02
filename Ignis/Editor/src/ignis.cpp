@@ -10,7 +10,6 @@ IgnisEditor::IgnisEditor()
 	m_window = Window(m_name, 1280, 720);
 	m_window.set_event_callback(BIND_CLASS_EVENT_FN(IgnisEditor::on_event));
 
-	//Renderer::init();
 
 	m_imgui_layer = ImGuiLayer(&m_window);
 
@@ -43,7 +42,6 @@ IgnisEditor::IgnisEditor()
 		 0.5f,  0.5f, 1.0f, 0.0f,  // Top-right    (1,0)
 		 0.5f, -0.5f, 1.0f, 1.0f   // Bottom-right (1,1)
 	};
-
 
 	u32 indices[] =
 	{
@@ -80,6 +78,18 @@ IgnisEditor::IgnisEditor()
 	sp_b.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 	sp_b.texture = m_texture;
 
+	Renderer::init();
+
+	init_panels();
+}
+
+void IgnisEditor::init_panels()
+{
+	m_scene_hierarchy_panel = CreateRef<SceneHierarchyPanel>();
+	m_scene_hierarchy_panel->set_scene(m_scene.get());
+
+	m_inspector_panel = CreateRef<InspectorPanel>();
+	m_inspector_panel->set_data(m_scene_hierarchy_panel.get(), INSPECTOR_STATE_SCENE);
 }
 
 void IgnisEditor::run()
@@ -131,7 +141,7 @@ void IgnisEditor::run()
 
 void IgnisEditor::on_event(Event &event)
 {
-	if (is_viewport_hovered)
+	if (is_viewport_hovered || !ImGui::GetIO().WantCaptureKeyboard)
 		m_camera.on_event(event);
 }
 
@@ -144,15 +154,6 @@ void IgnisEditor::draw_viewport() {
 	m_viewport_size = {static_cast<i32>(viewport_size.x), static_cast<i32>(viewport_size.y)};
 	const ImTextureID viewport_id = m_viewport_framebuffer.get_id();
 	ImGui::Image(viewport_id, viewport_size, ImVec2(0, 1), ImVec2(1, 0));
-	ImGui::End();
-
-	ImGui::Begin("Inspector", nullptr, 0);
-	ImGui::Text("Hello World");
-	ImGui::ColorEdit4("clear color", glm::value_ptr(m_clear_color));
-
-	ImTextureID texture_a = (uintptr_t)m_texture->get_id();
-	ImGui::Image(texture_a, {512.0f, 256.0f}, ImVec2(0, 1), ImVec2(1, 0));
-
 	ImGui::End();
 }
 
@@ -187,6 +188,9 @@ void IgnisEditor::on_gui_render(f32 delta_time)
 {
 	ImGui::ShowDemoWindow();
 	draw_viewport();
+
+	m_scene_hierarchy_panel->render();
+	m_inspector_panel->render(delta_time);
 }
 
 void IgnisEditor::resize() {
