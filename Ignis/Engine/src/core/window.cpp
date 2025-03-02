@@ -115,21 +115,47 @@ void Window::poll_events()
         break;
     }
     case SDL_EVENT_KEY_DOWN:
+    {
+        const bool pressed = true;
+        KeyPressedEvent ev(event.key.key, event.key.mod, event.key.repeat);
+        m_event_callback(ev);
+
+        Input::keycodes[event.key.key] = pressed;
+
+        Input::modifiers[SDL_KMOD_SHIFT] = (event.key.mod & SDL_KMOD_SHIFT);
+        Input::modifiers[SDL_KMOD_CTRL]  = (event.key.mod & SDL_KMOD_CTRL);
+        Input::modifiers[SDL_KMOD_ALT]   = (event.key.mod & SDL_KMOD_ALT);
+        Input::modifiers[SDL_KMOD_GUI]   = (event.key.mod & SDL_KMOD_GUI);
+        Input::modifiers[SDL_KMOD_LALT]   = (event.key.mod & SDL_KMOD_LALT);
+        Input::modifiers[SDL_KMOD_LCTRL]   = (event.key.mod & SDL_KMOD_LCTRL);
+        Input::modifiers[SDL_KMOD_LSHIFT]   = (event.key.mod & SDL_KMOD_LSHIFT);
+        Input::modifiers[SDL_KMOD_RALT]   = (event.key.mod & SDL_KMOD_RALT);
+        Input::modifiers[SDL_KMOD_RCTRL]   = (event.key.mod & SDL_KMOD_RCTRL);
+        Input::modifiers[SDL_KMOD_RSHIFT]   = (event.key.mod & SDL_KMOD_RSHIFT);
+
+        break;
+    }
     case SDL_EVENT_KEY_UP:
     {
-        bool pressed = (event.key.type == SDL_EVENT_KEY_DOWN);
-        if (pressed)
-        {
-            Input::keycodes[event.key.key] = true;
-            KeyPressedEvent ev(event.key.key, event.key.mod, 0);
-            m_event_callback(ev);
-        }
-        else
-        {
-            Input::keycodes[event.key.key] = false;
-            KeyReleasedEvent ev(event.key.key, event.key.mod);
-            m_event_callback(ev);
-        }
+        const bool pressed = false;
+        KeyReleasedEvent ev(event.key.key, event.key.mod);
+        m_event_callback(ev);
+
+        // Update key state
+        Input::keycodes[event.key.key] = pressed;
+
+        // Check if the modifier is still active
+        Input::modifiers[SDL_KMOD_SHIFT] = (SDL_GetModState() & SDL_KMOD_SHIFT);
+        Input::modifiers[SDL_KMOD_CTRL]  = (SDL_GetModState() & SDL_KMOD_CTRL);
+        Input::modifiers[SDL_KMOD_ALT]   = (SDL_GetModState() & SDL_KMOD_ALT);
+        Input::modifiers[SDL_KMOD_GUI]   = (SDL_GetModState() & SDL_KMOD_GUI);
+        Input::modifiers[SDL_KMOD_LALT]   = (SDL_GetModState() & SDL_KMOD_LALT);
+        Input::modifiers[SDL_KMOD_LCTRL]   = (SDL_GetModState() & SDL_KMOD_LCTRL);
+        Input::modifiers[SDL_KMOD_LSHIFT]   = (SDL_GetModState() & SDL_KMOD_LSHIFT);
+        Input::modifiers[SDL_KMOD_RALT]   = (SDL_GetModState() & SDL_KMOD_RALT);
+        Input::modifiers[SDL_KMOD_RCTRL]   = (SDL_GetModState() & SDL_KMOD_RCTRL);
+        Input::modifiers[SDL_KMOD_RSHIFT]   = (SDL_GetModState() & SDL_KMOD_RSHIFT);
+
         break;
     }
     case SDL_EVENT_TEXT_INPUT:
@@ -140,14 +166,14 @@ void Window::poll_events()
     }
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
     {
-        Input::mousecodes[event.button.button] = true;
+        Input::mouse_buttons[event.button.button] = true;
         MouseButtonPressedEvent ev(event.button.button);
         m_event_callback(ev);
         break;
     }
     case SDL_EVENT_MOUSE_BUTTON_UP:
     {
-        Input::mousecodes[event.button.button] = false;
+        Input::mouse_buttons[event.button.button] = false;
         MouseButtonReleasedEvent ev(event.button.button);
         m_event_callback(ev);
         break;

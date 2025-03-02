@@ -1,17 +1,42 @@
 #include "renderer.hpp"
 
-RendererAPI Renderer::m_api;
+#include <glad/gl.h>
 
-void Renderer::init(RendererAPI api)
+#include "core/logger.hpp"
+
+RendererAPI Renderer::m_api;
+Ref<Texture> Renderer::white_texture;
+Ref<Texture> Renderer::black_texture;
+
+void Renderer::create(const RendererAPI api)
 {
     m_api = api;
 }
 
+void Renderer::init()
+{
+    glEnable(GL_DEPTH_TEST);
+
+    u32 white_texture_data = 0xffffff00;
+    u32 black_texture_data = 0xff00ff00;
+
+    TextureSpec texture_spec;
+    texture_spec.width = 1;
+    texture_spec.height = 1;
+    texture_spec.format = TEXTURE_FORMAT_RGBA8;
+
+    white_texture = Texture::create(texture_spec, Buffer(&white_texture_data, sizeof(white_texture_data)));
+    black_texture = Texture::create(texture_spec, Buffer(&black_texture_data, sizeof(black_texture_data)));
+}
+
 void Renderer::shutdown()
 {
+    if (white_texture) white_texture->destroy();
+    if (black_texture) black_texture->destroy();
 }
 
 RendererAPI Renderer::get_api()
 {
-    return m_api;;
+    LOG_ASSERT(m_api != RendererAPI::UNKNOWN, "[Renderer] RendererAPI must be set");
+    return m_api;
 }

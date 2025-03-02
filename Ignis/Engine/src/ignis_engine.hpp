@@ -14,10 +14,13 @@
 #include <renderer/gl/gl_buffer.hpp>
 #include <renderer/gl/gl_index_buffer.hpp>
 #include <renderer/gl/gl_vertex_buffer.hpp>
+#include <renderer/gl/gl_texture.hpp>
 #include <renderer/camera.hpp>
 #include <renderer/renderer.hpp>
 #include <core/imgui_layer.hpp>
 #include <core/imgui_layer.hpp>
+#include <scene/scene.hpp>
+#include <scene/components.hpp>
 #include <math/math.hpp>
 
 #include <SDL3/SDL_gpu.h>

@@ -61,9 +61,25 @@ void Camera::on_event(Event &e) {
     dispatcher.dispatch<MouseScrolledEvent>(BIND_CLASS_EVENT_FN(Camera::on_mouse_scroll_event));
 }
 
-bool Camera::on_mouse_scroll_event(MouseScrolledEvent &e) 
+bool Camera::on_mouse_scroll_event(MouseScrolledEvent &e)
 {
-    m_zoom -= e.get_offset_y() * 0.1f;
+    switch (m_type) {
+        case CAMERA_TYPE_2D: {
+            const f32 scale_factor = std::max(m_size.x, m_size.y); // Scale movement speed
+
+            if (Input::modifiers[KeyMod::Alt]) {
+                m_zoom -= e.get_offset_y() * (m_zoom * 0.1f);
+                m_zoom = std::max(m_zoom, 0.1f);
+            }
+            else {
+                const f32 move_speed = 50.0f / scale_factor;
+                m_position += get_right() * e.get_offset_x() * move_speed * m_aspect_ratio * m_zoom;
+                m_position += get_up() * e.get_offset_y() * move_speed * m_aspect_ratio * m_zoom;
+            }
+            break;
+        }
+    }
+
     return false;
 }
 

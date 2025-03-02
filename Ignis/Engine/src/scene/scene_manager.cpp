@@ -1,13 +1,15 @@
+#include "scene.hpp"
 #include "scene_manager.hpp"
 
-#include "scene.hpp"
-
+std::unordered_map<UUID, entt::registry> SceneManager::scene_registry_map;
 std::unordered_map<std::string, Ref<Scene>> SceneManager::m_scenes;
 Ref<Scene> SceneManager::m_current_scene;
 
 Ref<Scene> SceneManager::create_scene(const std::string &name)
 {
     m_scenes[name] = Scene::create(name);
+    scene_registry_map[m_scenes[name]->get_uuid()];
+
     if (!m_current_scene) {
         m_current_scene = m_scenes[name];
         return m_current_scene;

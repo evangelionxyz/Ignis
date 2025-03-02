@@ -8,5 +8,6 @@
 struct Input
 {
     static std::unordered_map<SDL_Keycode, bool> keycodes;
-    static std::unordered_map<u8, bool> mousecodes;
+    static std::unordered_map<SDL_Keymod, bool> modifiers;
+    static std::unordered_map<u8, bool> mouse_buttons;
 };

@@ -15,7 +15,6 @@ GLIndexBuffer::GLIndexBuffer(const u32 *indices, u32 count)
 {
     glCreateBuffers(1, &m_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
-
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(u32), indices, GL_STATIC_DRAW);
 }
 

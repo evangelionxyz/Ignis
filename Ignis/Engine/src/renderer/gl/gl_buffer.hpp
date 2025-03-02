@@ -3,6 +3,8 @@
 #include <core/object.hpp>
 #include <glad/gl.h>
 
+#include "gl_wrapper.hpp"
+
 enum ShaderDataType
 {
     ShaderDataType_Unknown = 0,
@@ -44,18 +46,18 @@ static GLenum get_gl_shader_data_type(ShaderDataType type)
 {
     switch (type)
     {
-        case ShaderDataType_Float:   return GL_FLOAT;
-        case ShaderDataType_Float2:  return GL_FLOAT;
-        case ShaderDataType_Float3:  return GL_FLOAT;
-        case ShaderDataType_Float4:  return GL_FLOAT;
-        case ShaderDataType_Mat2:    return GL_FLOAT;
-        case ShaderDataType_Mat3:    return GL_FLOAT;
-        case ShaderDataType_Mat4:    return GL_FLOAT;
-        case ShaderDataType_Int:     return GL_INT;
-        case ShaderDataType_Int2:    return GL_INT;
-        case ShaderDataType_Int3:    return GL_INT;
-        case ShaderDataType_Int4:    return GL_INT;
-        case ShaderDataType_Bool:    return GL_BOOL;
+        case ShaderDataType_Float:  return GL_FLOAT;
+        case ShaderDataType_Float2: return GL_FLOAT;
+        case ShaderDataType_Float3: return GL_FLOAT;
+        case ShaderDataType_Float4: return GL_FLOAT;
+        case ShaderDataType_Mat2:   return GL_FLOAT;
+        case ShaderDataType_Mat3:   return GL_FLOAT;
+        case ShaderDataType_Mat4:   return GL_FLOAT;
+        case ShaderDataType_Int:    return GL_INT;
+        case ShaderDataType_Int2:   return GL_INT;
+        case ShaderDataType_Int3:   return GL_INT;
+        case ShaderDataType_Int4:   return GL_INT;
+        case ShaderDataType_Bool:   return GL_BOOL;
     }
 
     LOG_ASSERT(false, "Unknown Shader Data Type");
@@ -79,18 +81,18 @@ struct BufferElement
     u8 get_component_count() const
     {
         switch (type) {
-            case ShaderDataType_Float: return 1;
+            case ShaderDataType_Float:  return 1;
             case ShaderDataType_Float2: return 2;
             case ShaderDataType_Float3: return 3;
             case ShaderDataType_Float4: return 4;
-            case ShaderDataType_Mat2: return 2;
-            case ShaderDataType_Mat3: return 3;
-            case ShaderDataType_Mat4: return 4;
-            case ShaderDataType_Int: return 1;
-            case ShaderDataType_Int2: return 2;
-            case ShaderDataType_Int3: return 3;
-            case ShaderDataType_Int4: return 4;
-            case ShaderDataType_Bool: return 1;
+            case ShaderDataType_Mat2:   return 2;
+            case ShaderDataType_Mat3:   return 3;
+            case ShaderDataType_Mat4:   return 4;
+            case ShaderDataType_Int:    return 1;
+            case ShaderDataType_Int2:   return 2;
+            case ShaderDataType_Int3:   return 3;
+            case ShaderDataType_Int4:   return 4;
+            case ShaderDataType_Bool:   return 1;
         }
 
         LOG_ASSERT(false, "[BufferElement] Unknown shader data type");
@@ -131,7 +133,7 @@ private:
 
 class GLBuffer : public Object {
 public:
-    u32 get_id() const {return m_id;}
+    u32 get_id() {return m_id;}
 
 protected:
     u32 m_id = 0;

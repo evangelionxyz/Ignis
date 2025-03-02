@@ -27,6 +27,11 @@ private:
     Ref<GLVertexBuffer> m_vertex_buffer;
 
     glm::ivec2 m_viewport_size;
+    Ref<Scene> m_scene;
 
     bool is_viewport_hovered = false, is_viewport_active = false;
+
+    glm::vec4 m_clear_color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+
+    Ref<Texture> m_texture;
 };

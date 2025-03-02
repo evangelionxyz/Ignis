@@ -418,5 +418,6 @@ namespace KeyMod {
         RightAlt     = IGN_KEY_MOD_RALT,
         RightSuper   = IGN_KEY_MOD_RGUI,
         Super        = IGN_KEY_MOD_GUI,
+        Alt          = IGN_KEY_MOD_ALT,
     };
 }

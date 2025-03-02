@@ -1,8 +1,11 @@
 set(IGNIS_ENGINE_SOURCE
   src/core/application.hpp
+  src/core/uuid.cpp
+  src/core/uuid.hpp
   src/core/utils.hpp
   src/core/window.cpp
   src/core/window.hpp
+  src/core/buffer.hpp
   src/core/imgui_layer.cpp
   src/core/input/input.cpp
   src/core/input/input.hpp
@@ -14,23 +17,37 @@ set(IGNIS_ENGINE_SOURCE
   src/renderer/gl/gl_shader.hpp
   src/renderer/gl/gl_framebuffer.cpp
   src/renderer/gl/gl_framebuffer.hpp
-  src/core/logger.hpp
-  src/core/logger.cpp
-  src/renderer/renderer.hpp
-  src/renderer/renderer.cpp
-  src/scene/scene.cpp
-  src/scene/scene.hpp
-  src/scene/scene_manager.cpp
-  src/scene/scene_manager.hpp
   src/renderer/gl/gl_vertex_array.cpp
   src/renderer/gl/gl_vertex_array.hpp
   src/renderer/gl/gl_vertex_buffer.cpp
   src/renderer/gl/gl_vertex_buffer.hpp
   src/renderer/gl/gl_index_buffer.cpp
   src/renderer/gl/gl_index_buffer.hpp
+  src/renderer/gl/gl_texture.cpp
+  src/renderer/gl/gl_texture.hpp
+  src/renderer/texture.hpp
+  src/renderer/texture.cpp
+  src/renderer/framebuffer.hpp
+  src/renderer/framebuffer.cpp
+  src/core/logger.hpp
+  src/core/logger.cpp
   src/math/math.hpp
   src/math/math.cpp
+  src/renderer/renderer.hpp
+  src/renderer/renderer.cpp
+  src/scene/entt.hpp
+  src/scene/scene.cpp
+  src/scene/scene.hpp
+  src/scene/scene_manager.cpp
+  src/scene/scene_manager.hpp
+  src/scene/components.cpp
+  src/scene/components.hpp
   src/ignis_engine.hpp
+  src/assets/asset_manager.cpp
+  src/assets/asset_manager.hpp
+  src/assets/asset.cpp
+  src/assets/asset.hpp
+        src/renderer/gl/gl_wrapper.hpp
 )
 
 include_directories(IgnisEditor ${INCLUDE_DIRS})

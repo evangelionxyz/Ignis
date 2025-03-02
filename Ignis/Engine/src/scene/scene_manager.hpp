@@ -1,5 +1,6 @@
 #pragma once
 #include "scene.hpp"
+#include "entt.hpp"
 
 #include <unordered_map>
 #include <string>
@@ -13,6 +14,8 @@ public:
     static bool remove_scene(const std::string &name);
 
     static void set_active(const Ref<Scene> &scene);
+
+    static std::unordered_map<UUID, entt::registry> scene_registry_map;
 
 private:
     static std::unordered_map<std::string, Ref<Scene>> m_scenes;
