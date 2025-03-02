@@ -103,6 +103,7 @@ void GLFramebuffer::invalidate()
     if (m_spec.read_buffer == false)
         glReadBuffer(GL_NONE);
 
+    glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

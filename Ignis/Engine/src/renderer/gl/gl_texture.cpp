@@ -3,7 +3,7 @@
 
 #include "core/buffer.hpp"
 
-GLTexture::GLTexture(const TextureSpec &spec, const Buffer &buffer)
+GLTexture::GLTexture(const TextureSpec &spec, const Buffer buffer)
     : m_spec(spec)
 {
     if (m_spec.width == 0 || m_spec.height == 0) {
@@ -26,8 +26,6 @@ GLTexture::GLTexture(const TextureSpec &spec, const Buffer &buffer)
     if (buffer) {
         GLTexture::set_data(buffer);
     }
-
-    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 GLTexture::GLTexture(const std::string &filepath)
@@ -54,8 +52,6 @@ GLTexture::GLTexture(const std::string &filepath)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void GLTexture::bind(const i32 index)
@@ -65,12 +61,13 @@ void GLTexture::bind(const i32 index)
     glBindTextureUnit(index, m_id);
 }
 
-void GLTexture::set_data(const Buffer &buffer)
+void GLTexture::set_data(const Buffer buffer)
 {
     glBindTexture(GL_TEXTURE_2D, m_id);
 
     // Correct buffer size check
-    m_spec.channels = m_spec.format == TEXTURE_FORMAT_RGBA8 ? 4 : 3;
+    m_spec.channels = get_texture_attribute_count(m_spec.format);
+
     size_t expected_size = m_spec.width * m_spec.height * m_spec.channels;
     LOG_ASSERT(buffer.size == expected_size, "[Texture] Data must be entire texture! Expected %zu, got %zu", expected_size, buffer.size);
     const GLenum format = get_gl_texture_format(m_spec.format);

@@ -17,13 +17,13 @@ void Renderer::init()
 {
     glEnable(GL_DEPTH_TEST);
 
-    u32 white_texture_data = 0xffffff00;
-    u32 black_texture_data = 0xff00ff00;
+    u32 white_texture_data = 0xffffffff;
+    u32 black_texture_data = 0xff000000;
 
     TextureSpec texture_spec;
     texture_spec.width = 1;
     texture_spec.height = 1;
-    texture_spec.format = TEXTURE_FORMAT_RGBA8;
+    texture_spec.format = TEXTURE_FORMAT_RGBA;
 
     white_texture = Texture::create(texture_spec, Buffer(&white_texture_data, sizeof(white_texture_data)));
     black_texture = Texture::create(texture_spec, Buffer(&black_texture_data, sizeof(black_texture_data)));

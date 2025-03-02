@@ -2,7 +2,7 @@
 #include "renderer.hpp"
 #include "gl/gl_texture.hpp"
 
-Ref<Texture> Texture::create(const TextureSpec &spec, const Buffer &buffer)
+Ref<Texture> Texture::create(const TextureSpec &spec, const Buffer buffer)
 {
     switch (Renderer::get_api()) {
         case RendererAPI::OPENGL: return CreateRef<GLTexture>(spec, buffer);

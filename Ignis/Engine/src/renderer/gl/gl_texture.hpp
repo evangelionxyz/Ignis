@@ -60,10 +60,10 @@ static GLenum get_gl_texture_filter(const TextureFilter filter)
 class GLTexture : public Texture {
 public:
     GLTexture() = default;
-    GLTexture(const TextureSpec &spec, const Buffer &buffer);
+    GLTexture(const TextureSpec &spec, const Buffer buffer);
     GLTexture(const std::string &filepath);
 
-    void set_data(const Buffer &buffer) override;
+    void set_data(const Buffer buffer) override;
     void bind(i32 index) override;
     void destroy() override;
 

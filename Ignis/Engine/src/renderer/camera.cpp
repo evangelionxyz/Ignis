@@ -73,8 +73,14 @@ bool Camera::on_mouse_scroll_event(MouseScrolledEvent &e)
             }
             else {
                 const f32 move_speed = 50.0f / scale_factor;
-                m_position += get_right() * e.get_offset_x() * move_speed * m_aspect_ratio * m_zoom;
-                m_position += get_up() * e.get_offset_y() * move_speed * m_aspect_ratio * m_zoom;
+                if (Input::modifiers[KeyMod::LeftShift]) {
+                    m_position -= get_right() * e.get_offset_y() * move_speed * m_aspect_ratio * m_zoom;
+                    m_position += get_up() * e.get_offset_x() * move_speed * m_aspect_ratio * m_zoom;
+                }
+                else {
+                    m_position += get_right() * e.get_offset_x() * move_speed * m_aspect_ratio * m_zoom;
+                    m_position += get_up() * e.get_offset_y() * move_speed * m_aspect_ratio * m_zoom;
+                }
             }
             break;
         }

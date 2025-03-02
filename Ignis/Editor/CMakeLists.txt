@@ -1,6 +1,10 @@
 ﻿set(IGNIS_EDITOR_SOURCE
   src/ignis.cpp 
   src/ignis.hpp
+  src/inspector_panel.hpp
+  src/inspector_panel.cpp
+        src/scene_hierarchy_panel.hpp
+        src/scene_hierarchy_panel.cpp
 )
 add_executable (IgnisEditor ${IGNIS_EDITOR_SOURCE})
 

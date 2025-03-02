@@ -10,7 +10,7 @@ Scene::Scene(const std::string &name, UUID uuid)
 entt::entity Scene::create_entity(const std::string &name)
 {
     const entt::entity entity = m_registry->create();
-    ID &id_comp = m_registry->emplace<ID>(entity, ID(name));
+    ID &id_comp = m_registry->emplace<ID>(entity, ID(name, UUID()));
     m_registry->emplace<Transform>(entity, Transform());
 
     m_entities[id_comp.uuid] = entity;
@@ -28,22 +28,16 @@ entt::entity Scene::get_entity(const UUID uuid)
 void Scene::destroy_entity(UUID uuid)
 {
     entt::entity entity = get_entity(uuid);
-    if (entity != entt::null)
-    {
-        m_entities.erase(uuid);
-        m_registry->destroy(entity);
-    }
+    destroy_entity(entity);
 }
 
 void Scene::destroy_entity(entt::entity entity)
 {
-    if (entity != entt::null)
+    m_registry->destroy(entity);
+    m_entities.erase(std::ranges::find_if(m_entities, [entity](const auto &pair)
     {
-        const ID &id_comp = m_registry->get<ID>(entity);
-        if (m_entities.contains(id_comp.uuid))
-            m_entities.erase(id_comp.uuid);
-        m_registry->destroy(entity);
-    }
+        return pair.second == entity;
+    }));
 }
 
 EntityMap &Scene::get_entities()
@@ -63,7 +57,6 @@ void Scene::start_transition(const Ref<Scene> &next_scene)
 
 void Scene::destroy()
 {
-    //m_registry->
     m_entities.clear();
     delete m_registry;
 }

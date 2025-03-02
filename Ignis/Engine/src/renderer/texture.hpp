@@ -8,6 +8,7 @@ enum TextureFormat
     TEXTURE_FORMAT_UNKNOWN,
     TEXTURE_FORMAT_RED_INTEGER,
     TEXTURE_FORMAT_RGB,
+    TEXTURE_FORMAT_RGB8,
     TEXTURE_FORMAT_RGBA,
     TEXTURE_FORMAT_RGBA8,
     TEXTURE_FORMAT_RGBA16F,
@@ -41,6 +42,19 @@ struct TextureSpec
     }
 };
 
+static i32 get_texture_attribute_count(const TextureFormat format)
+{
+    switch (format) {
+        case TEXTURE_FORMAT_RGBA:
+        case TEXTURE_FORMAT_RGBA8:
+        case TEXTURE_FORMAT_RGBA16F: return 4;
+        case TEXTURE_FORMAT_RGB:
+        case TEXTURE_FORMAT_RGB8: return 3;
+        case TEXTURE_FORMAT_RED_INTEGER: return 1;
+        default: return 0;
+    }
+}
+
 static bool is_depth_format(const TextureFormat format)
 {
     switch (format) {
@@ -53,11 +67,11 @@ static bool is_depth_format(const TextureFormat format)
 class Texture : public Object
 {
 public:
-    virtual void set_data(const Buffer &buffer) = 0;
+    virtual void set_data(const Buffer buffer) = 0;
     virtual u32 get_id() const = 0;
     virtual i32 get_index() const = 0;
     virtual void bind(i32 index) = 0;
 
-    static Ref<Texture> create(const TextureSpec &spec, const Buffer &buffer = Buffer());
+    static Ref<Texture> create(const TextureSpec &spec, const Buffer buffer = Buffer());
     static Ref<Texture> create(const std::string &filepath);
 };
