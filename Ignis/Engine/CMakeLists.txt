@@ -25,6 +25,7 @@ set(IGNIS_ENGINE_SOURCE
   src/renderer/gl/gl_index_buffer.hpp
   src/renderer/gl/gl_texture.cpp
   src/renderer/gl/gl_texture.hpp
+  src/renderer/gl/gl_renderer_2d.hpp
   src/renderer/texture.hpp
   src/renderer/texture.cpp
   src/renderer/framebuffer.hpp
@@ -47,7 +48,7 @@ set(IGNIS_ENGINE_SOURCE
   src/assets/asset_manager.hpp
   src/assets/asset.cpp
   src/assets/asset.hpp
-        src/renderer/gl/gl_wrapper.hpp
+  src/renderer/gl/gl_wrapper.hpp
 )
 
 include_directories(IgnisEditor ${INCLUDE_DIRS})
