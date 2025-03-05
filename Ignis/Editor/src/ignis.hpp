@@ -2,6 +2,7 @@
 #include "ignis_engine.hpp"
 #include "inspector_panel.hpp"
 #include "scene_hierarchy_panel.hpp"
+#include "content_browser_panel.hpp"
 
 class IgnisEditor : public Application
 {
@@ -34,6 +35,7 @@ private:
 
     Ref<SceneHierarchyPanel> m_scene_hierarchy_panel;
     Ref<InspectorPanel> m_inspector_panel;
+    Ref<ContentBrowserPanel> m_content_browser_panel;
 
     bool is_viewport_hovered = false, is_viewport_active = false;
 

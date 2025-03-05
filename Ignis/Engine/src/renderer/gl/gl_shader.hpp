@@ -1,6 +1,6 @@
 #include "core/object.hpp"
 
-#include <glad/gl.h>
+#include <glad/glad.h>
 #include <stdint.h>
 #include <string>
 

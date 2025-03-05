@@ -11,7 +11,7 @@
 
 #include "renderer/renderer.hpp"
 
-#include <glad/gl.h>
+#include <glad/glad.h>
 
 Window::Window(const std::string& title, i32 width, i32 height)
     : m_title(title.c_str()), m_width(width), m_height(height)
@@ -19,13 +19,13 @@ Window::Window(const std::string& title, i32 width, i32 height)
 	SDL_InitFlags init_flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_CAMERA | SDL_INIT_AUDIO | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD;
 	SDL_Init(init_flags);
 
-    SDL_WindowFlags window_flags = SDL_WINDOW_RESIZABLE;
+    SDL_WindowFlags window_flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
     switch (Renderer::get_api()) {
         case RendererAPI::OPENGL: {
             window_flags |= SDL_WINDOW_OPENGL;
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); // Core profile required for RenderDoc
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
             //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
             //SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
             break;
@@ -53,7 +53,7 @@ Window::Window(const std::string& title, i32 width, i32 height)
                 return;
             }
 
-            gladLoadGL(SDL_GL_GetProcAddress);
+            gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
             const char *gl_version = reinterpret_cast<const char *>(glGetString(GL_VERSION));
             const char *gl_vendor = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
             LOG_INFO("OpenGL Info   : ");
@@ -186,6 +186,8 @@ void Window::poll_events()
     }
     case SDL_EVENT_MOUSE_MOTION:
     {
+        Input::mouse_position.x = static_cast<i32>(event.motion.x);
+        Input::mouse_position.y = static_cast<i32>(event.motion.y);
         MouseMovedEvent ev(event.motion.x, event.motion.y);
         m_event_callback(ev);
         break;
@@ -263,6 +265,11 @@ void Window::set_icon(unsigned char* data, i32 width, i32 height)
 
     SDL_SetWindowIcon(m_window, icon_surface);
     SDL_DestroySurface(icon_surface);
+}
+
+void Window::set_position(i32 x, i32 y)
+{
+    SDL_SetWindowPosition(m_window, x, y);
 }
 
 void Window::set_event_callback(const EventCallback& callback)

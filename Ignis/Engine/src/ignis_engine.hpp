@@ -7,6 +7,7 @@
 #include <core/input/key_event.hpp>
 #include <core/input/app_event.hpp>
 #include <core/input/mouse_event.hpp>
+#include <core/input/input.hpp>
 #include <core/logger.hpp>
 #include <renderer/gl/gl_shader.hpp>
 #include <renderer/gl/gl_framebuffer.hpp>
@@ -24,7 +25,7 @@
 #include <math/math.hpp>
 
 #include <SDL3/SDL_gpu.h>
-#include <glad/gl.h>
+#include <glad/glad.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>

@@ -27,12 +27,13 @@ public:
 	void set_vsync(bool enable);
 	void set_icon(const char* filepath);
 	void set_icon(unsigned char* data, i32 width, i32 height);
-
+	void set_position(i32 x, i32 y);
 	void set_event_callback(const EventCallback& callback);
 	void set_gui_event_callback(const GuiEventCallback& callback);
 
 	void minimize();
 	void maximize();
+
 	void get_size(i32 *width, i32 *height);
 	void get_position(i32 *pos_x, i32 *pos_y);
 	void get_framebuffer_size(i32 *width, i32 *height);

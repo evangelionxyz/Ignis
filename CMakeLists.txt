@@ -8,21 +8,6 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-
-
-# glad
-FetchContent_Declare(glad
-	DOWNLOAD_EXTRACT_TIMESTAMP OFF
-	URL https://github.com/Dav1dde/glad/archive/refs/tags/v2.0.8.zip
-)
-FetchContent_GetProperties(glad)
-if (NOT glad_POPULATED)
-	set(FETCHCONTENT_QUIET NO)
-	FetchContent_MakeAvailable(glad)
-	add_subdirectory(${glad_SOURCE_DIR}/cmake glad_cmake)
-	GLAD_ADD_LIBRARY(glad REPRODUCIBLE EXCLUDE_FROM_ALL LOADER API gl:core=4.6)
-endif()
-
 # GLM
 find_package(glm 1.0.1 QUIET)
 if (NOT glm_FOUND)
@@ -86,6 +71,7 @@ set(INCLUDE_DIRS
 		${THIRDPARTY_DIR}/IMGUI
 		${THIRDPARTY_DIR}/STB
 		${THIRDPARTY_DIR}/SPDLOG/include
+		${THIRDPARTY_DIR}/GLAD/include
 		${VULKAN_INCLUDE_DIR}
 )
 

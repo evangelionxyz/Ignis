@@ -10,12 +10,12 @@ InspectorPanel::InspectorPanel()
 {
 }
 
-void InspectorPanel::render(f32 delta_time)
+void InspectorPanel::render()
 {
     ImGui::Begin("Inspector", nullptr);
     switch (m_state) {
         case INSPECTOR_STATE_SCENE: {
-            draw_scene_inspector(delta_time);
+            draw_scene_inspector();
             break;
         }
     }
@@ -28,7 +28,7 @@ void InspectorPanel::set_data(void *data, InspectorState state)
     m_data = data;
 }
 
-void InspectorPanel::draw_scene_inspector(f32 delta_time)
+void InspectorPanel::draw_scene_inspector()
 {
     if (!m_data)
         return;
@@ -65,7 +65,6 @@ void InspectorPanel::draw_scene_inspector(f32 delta_time)
         }
 
         ImGui::PopItemWidth();
-        
 
         constexpr ImGuiTreeNodeFlags tree_node_flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
 

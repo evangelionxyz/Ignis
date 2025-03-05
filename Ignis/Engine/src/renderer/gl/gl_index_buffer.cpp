@@ -1,6 +1,6 @@
 #include "gl_index_buffer.hpp"
 
-#include <glad/gl.h>
+#include <glad/glad.h>
 
 GLIndexBuffer::GLIndexBuffer(u32 size)
 {

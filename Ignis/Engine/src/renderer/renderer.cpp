@@ -1,6 +1,6 @@
 #include "renderer.hpp"
 
-#include <glad/gl.h>
+#include <glad/glad.h>
 
 #include "core/logger.hpp"
 

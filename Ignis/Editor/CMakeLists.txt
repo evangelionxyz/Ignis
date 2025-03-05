@@ -3,8 +3,10 @@
   src/ignis.hpp
   src/inspector_panel.hpp
   src/inspector_panel.cpp
-        src/scene_hierarchy_panel.hpp
-        src/scene_hierarchy_panel.cpp
+  src/scene_hierarchy_panel.hpp
+  src/scene_hierarchy_panel.cpp
+  src/content_browser_panel.cpp
+  src/content_browser_panel.hpp
 )
 add_executable (IgnisEditor ${IGNIS_EDITOR_SOURCE})
 

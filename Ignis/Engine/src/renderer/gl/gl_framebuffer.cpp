@@ -1,7 +1,7 @@
 #include "gl_framebuffer.hpp"
 
 #include <core/logger.hpp>
-#include <glad/gl.h>
+#include <glad/glad.h>
 #include "gl_texture.hpp"
 
 static constexpr u32 s_max_framebuffer_size = 8192;
@@ -94,7 +94,7 @@ void GLFramebuffer::invalidate()
     }
 
    if (!m_color_attachments.empty()) {
-       const GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+       constexpr GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
        glDrawBuffers(4, buffers);
    }
 

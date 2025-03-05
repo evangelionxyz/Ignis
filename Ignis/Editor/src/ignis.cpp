@@ -1,5 +1,6 @@
 ﻿#include "ignis.hpp"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 
 IgnisEditor::IgnisEditor()
@@ -9,7 +10,6 @@ IgnisEditor::IgnisEditor()
 
 	m_window = Window(m_name, 1280, 720);
 	m_window.set_event_callback(BIND_CLASS_EVENT_FN(IgnisEditor::on_event));
-
 
 	m_imgui_layer = ImGuiLayer(&m_window);
 
@@ -90,6 +90,8 @@ void IgnisEditor::init_panels()
 
 	m_inspector_panel = CreateRef<InspectorPanel>();
 	m_inspector_panel->set_data(m_scene_hierarchy_panel.get(), INSPECTOR_STATE_SCENE);
+
+	m_content_browser_panel = CreateRef<ContentBrowserPanel>();
 }
 
 void IgnisEditor::run()
@@ -107,19 +109,97 @@ void IgnisEditor::run()
 
 		on_update(delta_time);
 		{
+			constexpr f32 TITLE_BAR_HEIGHT = 50.0f;
 			m_imgui_layer.begin_render();
 			{
 				//main dockspace
-				ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse
-										 | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
-										 | ImGuiWindowFlags_NoNavFocus;
+				ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse
+										 | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove
+										 | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 				const ImGuiViewport* viewport = ImGui::GetMainViewport();
 				ImGui::SetNextWindowPos(viewport->Pos);
 				ImGui::SetNextWindowSize(viewport->Size);
 				ImGui::SetNextWindowViewport(viewport->ID);
-				ImGui::Begin("main_dockspace", nullptr, flags);
-				ImGui::DockSpace(ImGui::GetID("main_dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+				ImGui::Begin("main_dockspace", nullptr, window_flags);
 
+				ImDrawList *draw_list = ImGui::GetWindowDrawList();
+				draw_list->AddText(viewport->Pos, 0xFFFFFFFF, "Hello World");
+				ImVec2 min_pos = viewport->Pos;
+				ImVec2 max_pos = ImVec2(viewport->Pos.x + viewport->Size.x, viewport->Pos.y + TITLE_BAR_HEIGHT);
+				
+
+				// title bar background
+				draw_list->AddRectFilled(min_pos, max_pos, IM_COL32(30, 30, 30, 255));
+
+				// Window title text
+				ImVec2 text_pos = ImVec2(min_pos.x + 10, min_pos.y + 7);
+				draw_list->AddText(text_pos, IM_COL32(255, 255, 255, 255), "Ignis Editor");
+
+				// buttons position
+				f32 button_size = 20.0f;
+				f32 button_spacing = 5.0f;
+				ImVec2 close_btn_pos = ImVec2(max_pos.x - button_size - button_spacing, min_pos.y + 5);
+				ImVec2 max_btn_pos = ImVec2(close_btn_pos.x - button_size - button_spacing, min_pos.y + 5);
+				ImVec2 min_btn_pos = ImVec2(max_btn_pos.x - button_size - button_spacing, min_pos.y + 5);
+
+				ImGui::SetCursorScreenPos(min_btn_pos);
+				if (ImGui::InvisibleButton("Minimize", ImVec2(button_size, button_size)))
+				{
+					SDL_MinimizeWindow(m_window.get_native_window());
+				}
+				draw_list->AddRectFilled(min_btn_pos, {min_btn_pos.x + button_size, min_btn_pos.y + button_size}, IM_COL32(200, 200, 200, 255));
+
+				ImGui::SetCursorScreenPos(max_btn_pos);
+				if (ImGui::InvisibleButton("Maximize", ImVec2(button_size, button_size)))
+				{
+					SDL_WindowFlags flags = SDL_GetWindowFlags(m_window.get_native_window());
+					if (flags & SDL_WINDOW_MAXIMIZED)
+						SDL_RestoreWindow(m_window.get_native_window());
+					else 
+						SDL_MaximizeWindow(m_window.get_native_window());
+				}
+				draw_list->AddRectFilled(max_btn_pos, {max_btn_pos.x + button_size, max_btn_pos.y + button_size}, IM_COL32(150, 150, 150, 255));
+
+				ImGui::SetCursorScreenPos(close_btn_pos);
+				if (ImGui::InvisibleButton("Close", ImVec2(button_size, button_size)))
+				{
+					m_window.close_window();
+				}
+				draw_list->AddRectFilled(close_btn_pos, {close_btn_pos.x + button_size, close_btn_pos.y + button_size}, IM_COL32(255, 0, 0, 255));
+
+				// drag to move window
+				static bool is_dragging = false;
+				static ImVec2 drag_start_pos;
+				static SDL_Point window_start_pos;
+
+				ImGui::SetCursorScreenPos(min_pos);
+				ImGui::InvisibleButton("TitleBarDrag", ImVec2(viewport->Size.x - 3 * (button_size + button_spacing), TITLE_BAR_HEIGHT));
+				if (ImGui::IsItemActive() && !is_dragging)
+				{
+					is_dragging = true;
+					drag_start_pos = ImGui::GetMousePos();
+					i32 win_x, win_y;
+					m_window.get_position(&win_x, &win_y);
+					window_start_pos = { win_x, win_y };
+				}
+
+				if (is_dragging)
+				{
+					if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+					{
+						ImVec2 mouse_delta = ImVec2(ImGui::GetMousePos().x - drag_start_pos.x, ImGui::GetMousePos(). y - drag_start_pos.y);
+						m_window.set_position(window_start_pos.x + static_cast<i32>(mouse_delta.x), window_start_pos.y + static_cast<i32>(mouse_delta.y));
+					}
+					else
+					{
+						is_dragging = false;
+					}
+				}
+
+				// dockspace
+				ImGui::SetCursorScreenPos({viewport->Pos.x, viewport->Pos.y + TITLE_BAR_HEIGHT});
+				ImGui::DockSpace(ImGui::GetID("main_dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+				
 				{
 					// scene dockspace
 					ImGuiWindowFlags dockspace_flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoScrollbar;
@@ -127,7 +207,7 @@ void IgnisEditor::run()
 					ImGui::DockSpace(ImGui::GetID("scene_dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 					ImGui::End(); // end scene dockspace
 				}
-
+				
 				ImGui::End(); // end dockspace
 			}
 
@@ -190,7 +270,8 @@ void IgnisEditor::on_gui_render(f32 delta_time)
 	draw_viewport();
 
 	m_scene_hierarchy_panel->render();
-	m_inspector_panel->render(delta_time);
+	m_inspector_panel->render();
+	m_content_browser_panel->render();
 }
 
 void IgnisEditor::resize() {

@@ -1,6 +1,6 @@
 #include "gl_vertex_buffer.hpp"
 
-#include <glad/gl.h>
+#include <glad/glad.h>
 
 GLVertexBuffer::GLVertexBuffer(const u32 size)
 {

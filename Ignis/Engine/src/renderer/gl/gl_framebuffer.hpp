@@ -24,7 +24,7 @@ private:
     u32 m_color_attachment_index = 0;
 
     std::vector<FramebufferTextureSpec> m_color_attachment_specs;
-    FramebufferTextureSpec m_depth_attachment_spec;
+    FramebufferTextureSpec m_depth_attachment_spec{};
 
     std::vector<u32> m_color_attachments;
     FramebufferSpec m_spec;

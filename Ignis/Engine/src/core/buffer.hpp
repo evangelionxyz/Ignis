@@ -1,5 +1,8 @@
 #pragma once
+
 #include "types.hpp"
+
+#include <cstring>
 
 struct Buffer
 {
