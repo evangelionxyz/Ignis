@@ -1,14 +1,16 @@
 ﻿#include "ignis.hpp"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include "imgui.h"
+IgnisEditor *IgnisEditor::s_instance = nullptr;;
+
 
 IgnisEditor::IgnisEditor()
 	: Application("Ignis")
 {
+	s_instance = this;
+
 	Renderer::create(RendererAPI::OPENGL);
 
-	m_window = Window(m_name, 1280, 720);
+	m_window = Window(m_name, 1280, 840);
 	m_window.set_event_callback(BIND_CLASS_EVENT_FN(IgnisEditor::on_event));
 
 	m_imgui_layer = ImGuiLayer(&m_window);
@@ -80,11 +82,22 @@ IgnisEditor::IgnisEditor()
 
 	Renderer::init();
 
-	init_panels();
+	init();
 }
 
-void IgnisEditor::init_panels()
+void IgnisEditor::init()
 {
+	// load textures
+	m_icons["close"] = Texture::create("Resources/Icons/close_24dp.png");
+	m_icons["add"] = Texture::create("Resources/Icons/add_24dp.png");
+	m_icons["minimize"] = Texture::create("Resources/Icons/minimize_24dp.png");
+	m_icons["expand_content"] = Texture::create("Resources/Icons/expand_content_24dp.png");
+	m_icons["collapse_content"] = Texture::create("Resources/Icons/collapse_content_24dp.png");
+	m_icons["visibility"] = Texture::create("Resources/Icons/visibility_24dp.png");
+	m_icons["visibility_off"] = Texture::create("Resources/Icons/visibility_off_24dp.png");
+	m_icons["visibility_lock"] = Texture::create("Resources/Icons/visibility_lock_24dp.png");
+
+	// create panels
 	m_scene_hierarchy_panel = CreateRef<SceneHierarchyPanel>();
 	m_scene_hierarchy_panel->set_scene(m_scene.get());
 
@@ -110,13 +123,15 @@ void IgnisEditor::run()
 		on_update(delta_time);
 		{
 			constexpr f32 TITLE_BAR_HEIGHT = 50.0f;
+
 			m_imgui_layer.begin_render();
 			{
 				//main dockspace
 				ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse
-										 | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove
-										 | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-				const ImGuiViewport* viewport = ImGui::GetMainViewport();
+                    | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                    ImGuiWindowFlags_NoNavFocus;
+
+                const ImGuiViewport* viewport = ImGui::GetMainViewport();
 				ImGui::SetNextWindowPos(viewport->Pos);
 				ImGui::SetNextWindowSize(viewport->Size);
 				ImGui::SetNextWindowViewport(viewport->ID);
@@ -126,75 +141,112 @@ void IgnisEditor::run()
 				draw_list->AddText(viewport->Pos, 0xFFFFFFFF, "Hello World");
 				ImVec2 min_pos = viewport->Pos;
 				ImVec2 max_pos = ImVec2(viewport->Pos.x + viewport->Size.x, viewport->Pos.y + TITLE_BAR_HEIGHT);
-				
 
-				// title bar background
-				draw_list->AddRectFilled(min_pos, max_pos, IM_COL32(30, 30, 30, 255));
+                // title bar background
+                draw_list->AddRectFilled(min_pos, max_pos, IM_COL32(40, 40, 40, 255));
 
 				// Window title text
 				ImVec2 text_pos = ImVec2(min_pos.x + 10, min_pos.y + 7);
-				draw_list->AddText(text_pos, IM_COL32(255, 255, 255, 255), "Ignis Editor");
+                const char* titlebar_text = "Ignis Editor";
+                draw_list->AddText(text_pos, IM_COL32(255, 255, 255, 255), titlebar_text);
+                ImVec2 titlebar_text_size = ImGui::CalcTextSize(titlebar_text);
+
+                // ==================================
+                // ============ Menu bar ============
+
+				bool menu_hovered = false;
+				const char* menu_items[] = { "File", "Edit", "View", "Help" };
+				f32 menu_spacing = 10.0f;
+				f32 menu_padding = 4.0f;
+				u32 menu_background_color = 0xFF333333;
+                ImVec2 menu_size = {50.0f, 25.0f};
+
+                ImVec2 menu_pos = {text_pos.x + titlebar_text_size.x + menu_spacing, min_pos.y + 2.0f};
+				ImGui::SetCursorScreenPos(menu_pos);
+				if (ImGui::Button("File", menu_size))
+					ImGui::OpenPopup("menu_file_popup");
+
+				menu_pos.x += menu_size.x + menu_padding;
+				ImGui::SetCursorScreenPos(menu_pos);
+				if (ImGui::Button("Edit", menu_size))
+					ImGui::OpenPopup("menu_file_popup");
+
+				// menu bar popup
+				if (ImGui::IsPopupOpen("menu_file_popup"))
+				{
+					if (ImGui::BeginMenu("File"))
+					{
+						if (ImGui::MenuItem("Open Scene"))
+						{
+							
+						}
+
+						ImGui::EndMenu();
+					}
+				}
+
+                // ==================================
+                // =========== ! Menu bar ============
 
 				// buttons position
-				f32 button_size = 20.0f;
-				f32 button_spacing = 5.0f;
+				f32 button_size = 24.0f;
+				f32 button_spacing = 8.0f;
 				ImVec2 close_btn_pos = ImVec2(max_pos.x - button_size - button_spacing, min_pos.y + 5);
 				ImVec2 max_btn_pos = ImVec2(close_btn_pos.x - button_size - button_spacing, min_pos.y + 5);
 				ImVec2 min_btn_pos = ImVec2(max_btn_pos.x - button_size - button_spacing, min_pos.y + 5);
 
 				ImGui::SetCursorScreenPos(min_btn_pos);
-				if (ImGui::InvisibleButton("Minimize", ImVec2(button_size, button_size)))
+				if (ImGui::ImageButton("_", m_icons["minimize"]->get_id(), {button_size, button_size}, {0.0f, 0.0f}, {1.0f, 1.0f}, {0.3f, 0.3f, 0.3f, 1.0f}))
 				{
 					SDL_MinimizeWindow(m_window.get_native_window());
 				}
-				draw_list->AddRectFilled(min_btn_pos, {min_btn_pos.x + button_size, min_btn_pos.y + button_size}, IM_COL32(200, 200, 200, 255));
 
 				ImGui::SetCursorScreenPos(max_btn_pos);
-				if (ImGui::InvisibleButton("Maximize", ImVec2(button_size, button_size)))
+				SDL_WindowFlags sdl_window_flags = SDL_GetWindowFlags(m_window.get_native_window());
+				bool window_maximized = sdl_window_flags & SDL_WINDOW_MAXIMIZED;
+				if (ImGui::ImageButton("□", window_maximized ? m_icons["collapse_content"]->get_id() : m_icons["expand_content"]->get_id(), {button_size, button_size}, {0.0f, 0.0f}, {1.0f, 1.0f}, {0.9f, 0.4f, 0.0f, 1.0f}))
 				{
 					SDL_WindowFlags flags = SDL_GetWindowFlags(m_window.get_native_window());
-					if (flags & SDL_WINDOW_MAXIMIZED)
-						SDL_RestoreWindow(m_window.get_native_window());
-					else 
-						SDL_MaximizeWindow(m_window.get_native_window());
+					window_maximized ? SDL_RestoreWindow(m_window.get_native_window()) : SDL_MaximizeWindow(m_window.get_native_window());
 				}
-				draw_list->AddRectFilled(max_btn_pos, {max_btn_pos.x + button_size, max_btn_pos.y + button_size}, IM_COL32(150, 150, 150, 255));
 
 				ImGui::SetCursorScreenPos(close_btn_pos);
-				if (ImGui::InvisibleButton("Close", ImVec2(button_size, button_size)))
+				if (ImGui::ImageButton("X", m_icons["close"]->get_id(), {button_size, button_size}, {0.0f, 0.0f}, {1.0f, 1.0f}, {0.9f, 0.0f, 0.0f, 1.0f}))
 				{
 					m_window.close_window();
 				}
-				draw_list->AddRectFilled(close_btn_pos, {close_btn_pos.x + button_size, close_btn_pos.y + button_size}, IM_COL32(255, 0, 0, 255));
 
 				// drag to move window
-				static bool is_dragging = false;
+                static bool is_dragging = false;
 				static ImVec2 drag_start_pos;
 				static SDL_Point window_start_pos;
 
 				ImGui::SetCursorScreenPos(min_pos);
 				ImGui::InvisibleButton("TitleBarDrag", ImVec2(viewport->Size.x - 3 * (button_size + button_spacing), TITLE_BAR_HEIGHT));
-				if (ImGui::IsItemActive() && !is_dragging)
+			
+				if (ImGui::IsItemActive() && !is_dragging && !menu_hovered)
 				{
 					is_dragging = true;
 					drag_start_pos = ImGui::GetMousePos();
 					i32 win_x, win_y;
 					m_window.get_position(&win_x, &win_y);
 					window_start_pos = { win_x, win_y };
-				}
+                }
 
 				if (is_dragging)
 				{
 					if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 					{
-						ImVec2 mouse_delta = ImVec2(ImGui::GetMousePos().x - drag_start_pos.x, ImGui::GetMousePos(). y - drag_start_pos.y);
-						m_window.set_position(window_start_pos.x + static_cast<i32>(mouse_delta.x), window_start_pos.y + static_cast<i32>(mouse_delta.y));
+                        ImVec2 mouse_pos = ImGui::GetMousePos();
+                        ImVec2 mouse_delta = ImVec2(mouse_pos.x - drag_start_pos.x, mouse_pos.y - drag_start_pos.y);
+                        m_window.set_position(window_start_pos.x + static_cast<i32>(mouse_delta.x),
+                                              window_start_pos.y + static_cast<i32>(mouse_delta.y));
 					}
-					else
-					{
-						is_dragging = false;
-					}
-				}
+                    else
+                    {
+                        is_dragging = false;
+                    }
+                }
 
 				// dockspace
 				ImGui::SetCursorScreenPos({viewport->Pos.x, viewport->Pos.y + TITLE_BAR_HEIGHT});
@@ -282,6 +334,15 @@ void IgnisEditor::resize() {
 	}
 }
 
+const Ref<Texture> &IgnisEditor::get_icons(const std::string &name)
+{
+	if (m_icons.contains(name))
+		return m_icons[name];
+
+	LOG_ASSERT(false, "Could not find icons : {}", name);
+	return nullptr;
+}
+
 void IgnisEditor::destroy()
 {
 	m_scene->destroy();
@@ -296,6 +357,11 @@ void IgnisEditor::destroy()
 	m_imgui_layer.destroy();
 
 	Renderer::shutdown();
+}
+
+IgnisEditor *IgnisEditor::get()
+{
+	return s_instance;
 }
 
 int main()

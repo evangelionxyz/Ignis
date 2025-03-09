@@ -32,8 +32,10 @@ set(IGNIS_ENGINE_SOURCE
   src/renderer/framebuffer.cpp
   src/core/logger.hpp
   src/core/logger.cpp
-  src/math/math.hpp
   src/math/math.cpp
+  src/math/math.hpp
+  src/project/project.cpp
+  src/project/project.hpp
   src/renderer/renderer.hpp
   src/renderer/renderer.cpp
   src/scene/entt.hpp
@@ -49,6 +51,12 @@ set(IGNIS_ENGINE_SOURCE
   src/assets/asset.cpp
   src/assets/asset.hpp
   src/renderer/gl/gl_wrapper.hpp
+  src/serializer/serializer.cpp
+  src/serializer/serializer.hpp
+  src/serializer/project_serializer.cpp
+  src/serializer/project_serializer.hpp
+  src/serializer/scene_serializer.cpp
+  src/serializer/scene_serializer.hpp
 )
 
 include_directories(IgnisEditor ${INCLUDE_DIRS})

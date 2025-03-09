@@ -7,3 +7,6 @@
 [submodule "Ignis/ThirdParty/IMGUI"]
 	path = Ignis/ThirdParty/IMGUI
 	url = https://github.com/ocornut/imgui.git
+[submodule "Ignis/ThirdParty/YAMLCPP"]
+	path = Ignis/ThirdParty/YAMLCPP
+	url = https://github.com/jbeder/yaml-cpp.git

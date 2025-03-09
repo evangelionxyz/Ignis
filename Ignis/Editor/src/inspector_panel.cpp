@@ -3,6 +3,8 @@
 #include "scene/scene.hpp"
 #include "scene_hierarchy_panel.hpp"
 
+#include "ignis.hpp"
+
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_internal.h>
 
@@ -45,13 +47,13 @@ void InspectorPanel::draw_scene_inspector()
         if (scene->entity_has_component<ID>(selected_entity))
         {
             char buffer[256];
-            strncpy(buffer, id_comp.name.c_str(), sizeof(buffer));
+            strncpy_s(buffer, id_comp.name.c_str(), sizeof(buffer));
 
             if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
             {
-                if (strlen(buffer) > 0) {
+                if (strlen(buffer) > 0) 
+                {
                     id_comp.name = buffer;
-
                 }
             }
         }
@@ -59,9 +61,9 @@ void InspectorPanel::draw_scene_inspector()
         ImGui::SameLine();
         ImGui::PushItemWidth(-1);
 
-        if (ImGui::Button("+", { ImGui::GetContentRegionAvail().x, 0.0f }))
+        if (ImGui::ImageButton("+", IgnisEditor::get()->get_icons("add")->get_id(), {16.0f, 16.0f}))
         {
-            ImGui::OpenPopup("AddComponent");
+            ImGui::OpenPopup("add_component");
         }
 
         ImGui::PopItemWidth();
@@ -72,8 +74,8 @@ void InspectorPanel::draw_scene_inspector()
         if (scene->entity_has_component<Transform>(selected_entity))
         {
             Transform& transform_comp = scene->entity_get_component<Transform>(selected_entity);
-
-            if (ImGui::TreeNodeEx("tr", tree_node_flags, "Transform")) {
+            if (ImGui::TreeNodeEx("tr", tree_node_flags, "Transform"))
+            {
                 ImGui::DragFloat3("Position", glm::value_ptr(transform_comp.world_translation), 0.025f);
                 ImGui::DragFloat3("Scale", glm::value_ptr(transform_comp.world_scale), 0.025f);
 
@@ -85,9 +87,8 @@ void InspectorPanel::draw_scene_inspector()
         if (scene->entity_has_component<Transform>(selected_entity))
         {
             Sprite& sp = scene->entity_get_component<Sprite>(selected_entity);
-
-            if (ImGui::TreeNodeEx("sp", tree_node_flags, "Sprite")) {
-
+            if (ImGui::TreeNodeEx("sp", tree_node_flags, "Sprite")) 
+            {
                 ImGui::ColorEdit4("Color", glm::value_ptr(sp.color), ImGuiColorEditFlags_InputRGB);
                 ImGui::TreePop();
             }

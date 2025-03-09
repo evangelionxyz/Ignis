@@ -72,6 +72,7 @@ set(INCLUDE_DIRS
 		${THIRDPARTY_DIR}/STB
 		${THIRDPARTY_DIR}/SPDLOG/include
 		${THIRDPARTY_DIR}/GLAD/include
+		${THIRDPARTY_DIR}/YAMLCPP/include
 		${VULKAN_INCLUDE_DIR}
 )
 
@@ -83,5 +84,6 @@ add_subdirectory ("Ignis/Editor/")
 add_subdirectory ("Ignis/Engine/")
 add_subdirectory("Ignis/ThirdParty/SDL3")
 add_subdirectory("Ignis/ThirdParty/SPDLOG")
+add_subdirectory("Ignis/ThirdParty/YAMLCPP")
 
 include("Ignis/ThirdParty/THIRDPARTY.cmake")

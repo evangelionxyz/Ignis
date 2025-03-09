@@ -131,6 +131,9 @@ ImGuiLayer::ImGuiLayer(Window *window)
     io.ConfigViewportsNoDecoration = false;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
 
+    f32 fontSize = 16.0f;
+    io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/segoeui.ttf", fontSize);
+
     ImGui_ImplSDL3_InitForOpenGL(m_window->get_native_window(), m_window->get_gl_context());
     ImGui_ImplOpenGL3_Init("#version 450");
 

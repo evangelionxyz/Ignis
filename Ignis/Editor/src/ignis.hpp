@@ -4,6 +4,8 @@
 #include "scene_hierarchy_panel.hpp"
 #include "content_browser_panel.hpp"
 
+#include <unordered_map>
+
 class IgnisEditor : public Application
 {
 public:
@@ -13,8 +15,11 @@ public:
     void on_event(Event &event) override;
 
     void destroy() override;
+    const Ref<Texture> &get_icons(const std::string &name);
+
+    static IgnisEditor *get();
 private:
-    void init_panels();
+    void init();
     void on_update(f32 delta_time);
     void on_gui_render(f32 delta_time);
 
@@ -26,6 +31,8 @@ private:
     Window m_window;
     GLShader m_shader;
     Camera m_camera;
+
+    static IgnisEditor *s_instance;
 
     Ref<GLVertexArray> m_vertex_array;
     Ref<GLVertexBuffer> m_vertex_buffer;
@@ -42,4 +49,6 @@ private:
     glm::vec4 m_clear_color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 
     Ref<Texture> m_texture;
+
+    std::unordered_map<std::string, Ref<Texture>> m_icons;
 };
