@@ -7,12 +7,11 @@ Scene::Scene(const std::string &name, UUID uuid)
     m_registry = new entt::registry();
 }
 
-entt::entity Scene::create_entity(const std::string &name)
+entt::entity Scene::create_entity(const std::string &name, UUID uuid)
 {
     const entt::entity entity = m_registry->create();
-    ID &id_comp = m_registry->emplace<ID>(entity, ID(name, UUID()));
+    ID &id_comp = m_registry->emplace<ID>(entity, ID(name, uuid));
     m_registry->emplace<Transform>(entity, Transform());
-
     m_entities[id_comp.uuid] = entity;
 
     return entity;
@@ -22,6 +21,7 @@ entt::entity Scene::get_entity(const UUID uuid)
 {
     if (m_entities.contains(uuid))
         return m_entities[uuid];
+        
     return entt::null;
 }
 
@@ -38,6 +38,11 @@ void Scene::destroy_entity(entt::entity entity)
     {
         return pair.second == entity;
     }));
+}
+
+const std::string &Scene::get_name()
+{
+    return m_name;
 }
 
 EntityMap &Scene::get_entities()
@@ -82,7 +87,7 @@ UUID Scene::get_uuid() const
     return m_uuid;
 }
 
-Ref<Scene> Scene::create(const std::string &name)
+Ref<Scene> Scene::create(const std::string &name, UUID uuid)
 {
-    return CreateRef<Scene>(name);
+    return CreateRef<Scene>(name, uuid);
 }

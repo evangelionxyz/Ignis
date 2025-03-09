@@ -62,27 +62,31 @@ IgnisEditor::IgnisEditor()
 	Ref<GLIndexBuffer> index_buffer = GLIndexBuffer::create(indices, sizeof(indices) / sizeof(u32));
 	m_vertex_array->set_index_buffer(index_buffer);
 
-	m_scene = Scene::create("new scene");
-	const entt::entity entity_a = m_scene->create_entity("entity1");
-	const entt::entity entity_b = m_scene->create_entity("entity2");
-
-	Transform &tr_a = m_scene->entity_get_component<Transform>(entity_a);
-	tr_a.world_translation = glm::vec3(1.0f, 0.0f, 0.0f);
-	Transform &tr_b = m_scene->entity_get_component<Transform>(entity_b);
-	tr_b.world_translation = glm::vec3(-1.0f, 0.0f, 0.0f);
-
-	m_texture = Texture::create("Resources/Textures/brick.jpg");
-	Sprite &sp_a = m_scene->entity_add_component<Sprite>(entity_a);
-	sp_a.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-	sp_a.texture = m_texture;
-
-	Sprite &sp_b = m_scene->entity_add_component<Sprite>(entity_b);
-	sp_b.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	sp_b.texture = m_texture;
-
 	Renderer::init();
+	init();	
 
-	init();
+	// m_scene = Scene::create("new scene");
+	// const entt::entity entity_a = m_scene->create_entity("entity1");
+	// const entt::entity entity_b = m_scene->create_entity("entity2");
+
+	// Transform &tr_a = m_scene->entity_get_component<Transform>(entity_a);
+	// tr_a.world_translation = glm::vec3(1.0f, 0.0f, 0.0f);
+	// Transform &tr_b = m_scene->entity_get_component<Transform>(entity_b);
+	// tr_b.world_translation = glm::vec3(-1.0f, 0.0f, 0.0f);
+
+	// m_texture = Texture::create("Resources/Textures/brick.jpg");
+	// Sprite &sp_a = m_scene->entity_add_component<Sprite>(entity_a);
+	// sp_a.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	// sp_a.texture = m_texture;
+
+	// Sprite &sp_b = m_scene->entity_add_component<Sprite>(entity_b);
+	// sp_b.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+	// sp_b.texture = m_texture;
+
+	// SceneSerializer scene_serializer(m_scene, "TestProject/test_project.ign");
+	// scene_serializer.serialize();
+
+	load_scene("TestProject/scenes/test_scene.ixscene");
 }
 
 void IgnisEditor::init()
@@ -99,7 +103,6 @@ void IgnisEditor::init()
 
 	// create panels
 	m_scene_hierarchy_panel = CreateRef<SceneHierarchyPanel>();
-	m_scene_hierarchy_panel->set_scene(m_scene.get());
 
 	m_inspector_panel = CreateRef<InspectorPanel>();
 	m_inspector_panel->set_data(m_scene_hierarchy_panel.get(), INSPECTOR_STATE_SCENE);
@@ -324,6 +327,12 @@ void IgnisEditor::on_gui_render(f32 delta_time)
 	m_scene_hierarchy_panel->render();
 	m_inspector_panel->render();
 	m_content_browser_panel->render();
+}
+
+void IgnisEditor::load_scene(const std::filesystem::path &filepath)
+{
+	m_scene = SceneSerializer::deserialize(filepath);
+	m_scene_hierarchy_panel->set_scene(m_scene.get());
 }
 
 void IgnisEditor::resize() {

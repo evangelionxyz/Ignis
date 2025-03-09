@@ -79,6 +79,10 @@
         "regex": "cpp",
         "source_location": "cpp",
         "span": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "deque": "cpp",
+        "ranges": "cpp",
+        "set": "cpp",
+        "unordered_set": "cpp"
     }
 }

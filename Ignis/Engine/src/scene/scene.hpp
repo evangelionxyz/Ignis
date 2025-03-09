@@ -21,7 +21,7 @@ public:
     void on_update(f32 delta_time);
     void render();
 
-    entt::entity create_entity(const std::string &name);
+    entt::entity create_entity(const std::string &name, UUID uuid = UUID());
     entt::entity get_entity(UUID uuid);
     void destroy_entity(UUID uuid);
     void destroy_entity(entt::entity entity);
@@ -55,10 +55,13 @@ public:
         return m_registry->all_of<T>(entity);
     }
 
+    const std::string &get_name();
+
     EntityMap &get_entities();
     entt::registry &get_registry() const;
     UUID get_uuid() const;
-    static Ref<Scene> create(const std::string &name);
+
+    static Ref<Scene> create(const std::string &name, UUID uuid = UUID());
 
 private:
     UUID m_uuid;

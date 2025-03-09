@@ -1,6 +1,5 @@
 #pragma once
 #include "scene/scene.hpp"
-
 #include "serializer.hpp"
 
 class SceneSerializer
@@ -14,4 +13,5 @@ public:
 
 private:
     Ref<Scene> m_scene;
+    std::filesystem::path m_filepath;
 };

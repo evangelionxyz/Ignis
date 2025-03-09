@@ -63,12 +63,15 @@ include_directories(IgnisEditor ${INCLUDE_DIRS})
 
 add_library(Ignis STATIC ${IGNIS_ENGINE_SOURCE})
 set_target_properties(Ignis PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(Ignis PRIVATE SDL3::SDL3 glm glad imgui)
+target_link_libraries(Ignis PRIVATE SDL3::SDL3 glm glad imgui yaml-cpp)
 
 add_custom_command(
     TARGET Ignis POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/Ignis/Resources ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Resources
+    
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/Ignis/TestProject ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestProject
 )
 
 target_compile_definitions(Ignis PRIVATE

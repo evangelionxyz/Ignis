@@ -24,6 +24,11 @@
 #include <scene/components.hpp>
 #include <math/math.hpp>
 
+#include <project/project.hpp>
+#include <serializer/serializer.hpp>
+#include <serializer/project_serializer.hpp>
+#include <serializer/scene_serializer.hpp>
+
 #include <SDL3/SDL_gpu.h>
 #include <glad/glad.h>
 

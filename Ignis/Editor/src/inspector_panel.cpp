@@ -38,6 +38,9 @@ void InspectorPanel::draw_scene_inspector()
     SceneHierarchyPanel* sh = static_cast<SceneHierarchyPanel*>(m_data);
     Scene *scene = sh->get_scene();
 
+    if (!scene)
+        return;
+
     entt::entity selected_entity = sh->get_selected_entity();
     if (scene->get_registry().valid(selected_entity))
     {

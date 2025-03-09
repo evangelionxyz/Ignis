@@ -12,7 +12,7 @@ add_executable (IgnisEditor ${IGNIS_EDITOR_SOURCE})
 
 include_directories(IgnisEditor ${INCLUDE_DIRS})
 
-target_link_libraries(IgnisEditor Ignis SDL3::SDL3 glm glad imgui)
+target_link_libraries(IgnisEditor Ignis SDL3::SDL3 glm glad imgui yaml-cpp)
 
 target_compile_definitions(IgnisEditor PRIVATE
         $<$<CONFIG:Debug>:DEBUG_BUILD>
