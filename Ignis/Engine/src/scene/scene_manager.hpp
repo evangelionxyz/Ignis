@@ -1,4 +1,6 @@
 #pragma once
+#include "assets/asset.hpp"
+
 #include "scene.hpp"
 #include "entt.hpp"
 
@@ -15,7 +17,7 @@ public:
 
     static void set_active(const Ref<Scene> &scene);
 
-    static std::unordered_map<UUID, entt::registry> scene_registry_map;
+    static std::unordered_map<AssetHandle, entt::registry> scene_registry_map;
 
 private:
     static std::unordered_map<std::string, Ref<Scene>> m_scenes;

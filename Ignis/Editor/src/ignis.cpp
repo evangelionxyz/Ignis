@@ -4,7 +4,6 @@
 
 IgnisEditor *IgnisEditor::s_instance = nullptr;;
 
-
 IgnisEditor::IgnisEditor()
     : Application("Ignis")
 {
@@ -65,30 +64,7 @@ IgnisEditor::IgnisEditor()
     m_vertex_array->set_index_buffer(index_buffer);
 
     Renderer::init();
-    init();	
-
-    // m_scene = Scene::create("new scene");
-    // const entt::entity entity_a = m_scene->create_entity("entity1");
-    // const entt::entity entity_b = m_scene->create_entity("entity2");
-
-    // Transform &tr_a = m_scene->entity_get_component<Transform>(entity_a);
-    // tr_a.world_translation = glm::vec3(1.0f, 0.0f, 0.0f);
-    // Transform &tr_b = m_scene->entity_get_component<Transform>(entity_b);
-    // tr_b.world_translation = glm::vec3(-1.0f, 0.0f, 0.0f);
-
-    // m_texture = Texture::create("Resources/Textures/brick.jpg");
-    // Sprite &sp_a = m_scene->entity_add_component<Sprite>(entity_a);
-    // sp_a.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    // sp_a.texture = m_texture;
-
-    // Sprite &sp_b = m_scene->entity_add_component<Sprite>(entity_b);
-    // sp_b.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-    // sp_b.texture = m_texture;
-
-    // SceneSerializer scene_serializer(m_scene, "TestProject/test_project.ign");
-    // scene_serializer.serialize();
-
-    //load_scene("TestProject/scenes/test_scene.ixscene");
+    init();
 }
 
 void IgnisEditor::init()
@@ -200,17 +176,27 @@ void IgnisEditor::run()
 
                 if (ImGui::BeginPopup("FileMenuPopup"))
                 {
-                    if (ImGui::MenuItem("Open Scene"))
+                    if (ImGui::MenuItem("Save Scene"))
                     {
-                        std::filesystem::path filepath = filedialog_open_file("Ignis Scene (*.ixscene)\0*.ixscene\0");
-                        if (!filepath.empty())
+                        save_scene();
+                    }
+
+                    if (ImGui::MenuItem("Save Scene As"))
+                    {
+                        m_current_scene_path = filedialog_open_file("Ignis Scene (*.ixscene)\0*.ixscene\0");
+                        if (!m_current_scene_path.empty())
                         {
-                            load_scene(filepath);
+                            save_scene(m_current_scene_path);
                         }
                     }
 
-                    if (ImGui::MenuItem("Save Scene"))
+                    if (ImGui::MenuItem("Open Scene"))
                     {
+                        m_current_scene_path = filedialog_open_file("Ignis Scene (*.ixscene)\0*.ixscene\0");
+                        if (!m_current_scene_path.empty())
+                        {
+                            load_scene(m_current_scene_path);
+                        }
                     }
 
                     if (ImGui::MenuItem("Exit"))
@@ -325,8 +311,51 @@ void IgnisEditor::run()
 
 void IgnisEditor::on_event(Event &event)
 {
+    EventDispatcher dispatcer(event);
+    dispatcer.dispatch<KeyPressedEvent>(BIND_CLASS_EVENT_FN(IgnisEditor::on_key_pressed_event));
+
     if (is_viewport_hovered || !ImGui::GetIO().WantCaptureKeyboard)
         m_camera.on_event(event);
+    
+}
+
+bool IgnisEditor::on_key_pressed_event(KeyPressedEvent &e)
+{
+    bool l_ctrl = e.get_key_mod_code() & KeyMod::LeftControl;
+    bool l_shift = e.get_key_mod_code() & KeyMod::LeftShift;
+
+    switch(e.get_key_code())
+    {
+    case Key::S:
+    {
+        if (l_ctrl)
+        {
+            if (l_shift)
+            {
+                m_current_scene_path = filedialog_save_file("Ignis Scene (*.ixscene)\0*.ixscene\0");
+                save_scene(m_current_scene_path);
+            }
+            else
+            {
+                save_scene();
+            }
+        }
+        break;
+    }
+    case Key::O:
+    {
+        if (l_ctrl)
+        {
+            m_current_scene_path = filedialog_open_file("Ignis Scene (*.ixscene)\0*.ixscene\0");
+            load_scene(m_current_scene_path);
+        }
+        break;
+    }
+    }
+
+    LOG_INFO("{}", e.to_string());
+
+    return false;
 }
 
 void IgnisEditor::draw_viewport() {
@@ -358,8 +387,9 @@ void IgnisEditor::on_update(f32 delta_time)
             m_shader.set_uniform_mat4("u_model_matrix", transform.get_world_transform());
             m_shader.set_uniform_vec4("u_color", sprite.color);
 
-            sprite.texture->bind(0);
-            m_shader.set_uniform_int("u_texture", sprite.texture->get_index());
+            Ref<Texture> texture = Renderer::white_texture;//sprite.texture->bind(0);
+            texture->bind(0);
+            m_shader.set_uniform_int("u_texture", texture->get_index());
 
             m_vertex_array->bind();
             m_vertex_buffer->bind();
@@ -383,8 +413,32 @@ void IgnisEditor::on_gui_render(f32 delta_time)
 
 void IgnisEditor::load_scene(const std::filesystem::path &filepath)
 {
+    if (filepath.empty())
+        return;
+
+    // destroy old scene
+    if (m_scene)
+        m_scene->destroy();
+    
     m_scene = SceneSerializer::deserialize(filepath);
     m_scene_hierarchy_panel->set_scene(m_scene.get());
+}
+
+void IgnisEditor::save_scene()
+{
+    if (m_current_scene_path.empty())
+        m_current_scene_path = filedialog_save_file("Ignis Scene (*.ixscene)\0*.ixscene\0");
+
+    save_scene(m_current_scene_path);
+}
+
+void IgnisEditor::save_scene(const std::filesystem::path &filepath)
+{
+    if (filepath.empty())
+        return;
+    
+    SceneSerializer sr(m_scene, filepath);
+    sr.serialize();
 }
 
 void IgnisEditor::resize() {
@@ -406,7 +460,8 @@ const Ref<Texture> &IgnisEditor::get_icons(const std::string &name)
 
 void IgnisEditor::destroy()
 {
-    m_scene->destroy();
+    if (m_scene)
+        m_scene->destroy();
 
     m_vertex_array->destroy();
     m_vertex_array->destroy();
@@ -428,14 +483,4 @@ IgnisEditor *IgnisEditor::get()
 Window *IgnisEditor::get_window()
 {
     return &m_window;
-}
-
-int main()
-{
-    Logger::init();
-    IgnisEditor editor;
-    editor.run();
-    editor.destroy();
-    Logger::shutdown();
-    return 0;
 }

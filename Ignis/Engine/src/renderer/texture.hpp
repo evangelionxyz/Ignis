@@ -3,6 +3,8 @@
 #include "core/types.hpp"
 #include "core/object.hpp"
 
+#include "assets/asset.hpp"
+
 enum TextureFormat
 {
     TEXTURE_FORMAT_UNKNOWN,
@@ -64,7 +66,7 @@ static bool is_depth_format(const TextureFormat format)
     }
 }
 
-class Texture : public Object
+class Texture : public Asset
 {
 public:
     virtual void set_data(const Buffer buffer) = 0;
@@ -74,4 +76,7 @@ public:
 
     static Ref<Texture> create(const TextureSpec &spec, const Buffer buffer = Buffer());
     static Ref<Texture> create(const std::string &filepath);
+
+    static AssetType get_static_type() { return ASSET_TYPE_TEXTURE; }
+    AssetType get_type() const override { return get_static_type(); }
 };

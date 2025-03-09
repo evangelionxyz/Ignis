@@ -1,5 +1,5 @@
 Scene:
-  UUID: 5982722199167288602
+  Handle: 5982722199167288602
   Name: new scene
   Entities:
     - Entity: 13213374688932981463

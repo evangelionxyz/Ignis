@@ -16,7 +16,7 @@ void SceneSerializer::serialize()
     sr.begin_map();
     {
         sr.begin_map("Scene");
-        sr.add_key_value("UUID", m_scene->get_uuid());
+        sr.add_key_value("Handle", m_scene->handle);
         sr.add_key_value("Name", m_scene->get_name());
 
         sr.begin_sequence("Entities");
@@ -48,7 +48,7 @@ void SceneSerializer::serialize()
                 const Sprite &sprite = m_scene->entity_get_component<Sprite>(entity.second);
                 sr.begin_map("Sprite");
                 sr.add_key_value("Color", sprite.color);
-                // TODO: Texture Asset Handle
+                sr.add_key_value("TextureHandle", sprite.texture_handle);
                 sr.end_map();
             }
 
@@ -72,7 +72,7 @@ Ref<Scene> SceneSerializer::deserialize(const std::filesystem::path &filepath)
     YAML::Node scene_node = data["Scene"];
 
     std::string scene_name = scene_node["Name"].as<std::string>();
-    UUID scene_uuid = scene_node["UUID"].as<UUID>();
+    AssetHandle scene_uuid = scene_node["Handle"].as<AssetHandle>();
 
     Ref<Scene> scene = Scene::create(scene_name, scene_uuid);
 
@@ -83,7 +83,7 @@ Ref<Scene> SceneSerializer::deserialize(const std::filesystem::path &filepath)
 
     for (YAML::iterator::value_type entity_node : entities_node)
     {
-        u64 entity_uuid = entity_node["Entity"].as<u64>();
+        UUID entity_uuid = entity_node["Entity"].as<UUID>();
         std::string entity_name = entity_node["ID"]["Name"].as<std::string>();
 
         entt::entity deserialized_entity = scene->create_entity(entity_name, entity_uuid);
@@ -102,7 +102,7 @@ Ref<Scene> SceneSerializer::deserialize(const std::filesystem::path &filepath)
         {
             Sprite &sprite = scene->entity_add_component<Sprite>(deserialized_entity);
             sprite.color = sprite_node["Color"].as<glm::vec4>();
-            sprite.texture = Renderer::white_texture;
+            //sprite.texture_handle;
         }
     }
 

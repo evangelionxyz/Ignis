@@ -1,8 +1,8 @@
 #include "scene.hpp"
 #include "components.hpp"
 
-Scene::Scene(const std::string &name, UUID uuid)
-    : m_name(name), m_uuid(uuid)
+Scene::Scene(const std::string &name, AssetHandle handle)
+    : m_name(name), Asset(handle)
 {
     m_registry = new entt::registry();
 }
@@ -80,11 +80,6 @@ void Scene::render()
     {
 
     });
-}
-
-UUID Scene::get_uuid() const
-{
-    return m_uuid;
 }
 
 Ref<Scene> Scene::create(const std::string &name, UUID uuid)

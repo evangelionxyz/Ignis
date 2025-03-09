@@ -1,7 +1,7 @@
 #pragma once
 
 #include "entt.hpp"
-
+#include "assets/asset.hpp"
 #include "core/object.hpp"
 #include "core/uuid.hpp"
 
@@ -10,10 +10,10 @@
 
 using EntityMap = std::unordered_map<UUID, entt::entity>;
 
-class Scene : public Object {
+class Scene : public Asset {
 public:
     Scene() = default;
-    Scene(const std::string &name, UUID uuid = UUID());
+    Scene(const std::string &name, AssetHandle handle = AssetHandle());
 
     void start_transition(const Ref<Scene> &next_scene);
     void destroy() override;
@@ -59,12 +59,13 @@ public:
 
     EntityMap &get_entities();
     entt::registry &get_registry() const;
-    UUID get_uuid() const;
 
-    static Ref<Scene> create(const std::string &name, UUID uuid = UUID());
+    static Ref<Scene> create(const std::string &name, AssetHandle handle = AssetHandle());
+
+    static AssetType get_static_type() { return ASSET_TYPE_SCENE; }
+    AssetType get_type() const override { return get_static_type(); }
 
 private:
-    UUID m_uuid;
     std::string m_name;
     Ref<Scene> m_next_scene;
 

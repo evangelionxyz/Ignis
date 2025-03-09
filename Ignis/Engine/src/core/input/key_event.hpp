@@ -58,7 +58,7 @@ public:
 		return ss.str();
 	}
 
-	static EventType get_static_type() { return EventType::KeyPressed; }
+	static EventType get_static_type() { return EventType::KeyReleased; }
 	virtual EventType get_event_type() const override { return get_static_type(); }
 };
 

@@ -1,5 +1,5 @@
 Scene:
-  Handle: 6142024349628125360
+  Handle: 17497243765810158993
   Name: new scene
   Entities:
     - Entity: 13213374688932981463
@@ -10,7 +10,7 @@ Scene:
         World_Rotation: [0, 0, 1, 0]
         World_Scale: [1, 1, 1]
       Sprite:
-        Color: [0.31316733, 1, 0, 1]
+        Color: [0, 0.02847004, 1, 1]
     - Entity: 15302633412398054401
       ID:
         Name: entity2

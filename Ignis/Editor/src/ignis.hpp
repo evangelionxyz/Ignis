@@ -24,8 +24,11 @@ private:
     void init();
     void on_update(f32 delta_time);
     void on_gui_render(f32 delta_time);
+    bool on_key_pressed_event(KeyPressedEvent &e);
 
     void load_scene(const std::filesystem::path &filepath);
+    void save_scene();
+    void save_scene(const std::filesystem::path &filepath);
 
     void draw_viewport();
     void resize();
@@ -55,4 +58,5 @@ private:
     Ref<Texture> m_texture;
 
     std::unordered_map<std::string, Ref<Texture>> m_icons;
+    std::filesystem::path m_current_scene_path;
 };

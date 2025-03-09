@@ -7,6 +7,7 @@
   src/scene_hierarchy_panel.cpp
   src/content_browser_panel.cpp
   src/content_browser_panel.hpp
+  src/main.cpp
 )
 add_executable (IgnisEditor ${IGNIS_EDITOR_SOURCE})
 

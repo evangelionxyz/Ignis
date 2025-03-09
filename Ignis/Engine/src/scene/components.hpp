@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/uuid.hpp"
+#include "assets/asset.hpp"
 
 #include <string>
 
@@ -19,11 +20,8 @@ struct ID : Component
 {
     ID();
     ID(const std::string &name, UUID uuid = UUID());
-
-
     std::string name;
     UUID uuid;
-
     std::vector<UUID> children;
 };
 
@@ -69,6 +67,6 @@ struct Sprite : Component
     Sprite(const Sprite &);
     Sprite(const glm::vec4 &color);
 
-    Ref<Texture> texture;
     glm::vec4 color;
+    AssetHandle texture_handle;
 };

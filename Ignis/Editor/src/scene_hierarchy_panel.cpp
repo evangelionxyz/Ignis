@@ -87,7 +87,7 @@ entt::entity SceneHierarchyPanel::draw_entity_create_context_menu() const
         else if (ImGui::MenuItem("Sprite")) {
             entity = m_scene->create_entity("sprite");
             Sprite &sp = m_scene->entity_add_component<Sprite>(entity);
-            sp.texture = Renderer::white_texture;
+            //sp.texture = Renderer::white_texture;
         }
         ImGui::EndMenu();
     }

@@ -117,7 +117,7 @@ void Window::poll_events()
     case SDL_EVENT_KEY_DOWN:
     {
         const bool pressed = true;
-        KeyPressedEvent ev(event.key.key, event.key.mod, event.key.repeat);
+        KeyPressedEvent ev(event.key.key, event.key.mod, 0);
         m_event_callback(ev);
 
         Input::keycodes[event.key.key] = pressed;
