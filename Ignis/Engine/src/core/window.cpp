@@ -19,7 +19,7 @@ Window::Window(const std::string& title, i32 width, i32 height)
 	SDL_InitFlags init_flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_CAMERA | SDL_INIT_AUDIO | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD;
 	SDL_Init(init_flags);
 
-    SDL_WindowFlags window_flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
+    SDL_WindowFlags window_flags = SDL_WINDOW_RESIZABLE;
     switch (Renderer::get_api()) {
         case RendererAPI::OPENGL: {
             window_flags |= SDL_WINDOW_OPENGL;
@@ -320,6 +320,27 @@ SDL_Window* Window::get_native_window()
 SDL_GLContext Window::get_gl_context()
 {
 	return m_gl_context;
+}
+
+HWND Window::get_native_handle()
+{
+#if 0
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
+        Display *xdisplay = (Display *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+        Window xwindow = (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+        if (xdisplay && xwindow) {
+            ...
+        }
+    } else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+        struct wl_display *display = (struct wl_display *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+        struct wl_surface *surface = (struct wl_surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+        if (display && surface) {
+            ...
+        }
+    }
+#endif
+    HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    return hwnd;
 }
 
 

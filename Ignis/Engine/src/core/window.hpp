@@ -4,9 +4,12 @@
 
 #include "input/event.hpp"
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_system.h>
 
 #include <string>
 #include <functional>
+
+#include <Windows.h>
 
 class Window : public Object
 {
@@ -42,6 +45,8 @@ public:
 
 	SDL_Window* get_native_window();
 	SDL_GLContext get_gl_context();
+
+	HWND get_native_handle();
 private:
 	bool m_is_running;
 	SDL_Window *m_window;

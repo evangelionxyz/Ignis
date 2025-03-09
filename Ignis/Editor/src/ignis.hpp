@@ -18,11 +18,13 @@ public:
     const Ref<Texture> &get_icons(const std::string &name);
 
     static IgnisEditor *get();
+
+    Window *get_window();
 private:
     void init();
     void on_update(f32 delta_time);
     void on_gui_render(f32 delta_time);
-    
+
     void load_scene(const std::filesystem::path &filepath);
 
     void draw_viewport();
