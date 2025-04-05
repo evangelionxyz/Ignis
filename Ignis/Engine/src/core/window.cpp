@@ -13,8 +13,15 @@
 
 #include <glad/glad.h>
 
-Window::Window(const std::string& title, i32 width, i32 height)
-    : m_title(title.c_str()), m_width(width), m_height(height)
+class Window::EventCallbackImpl
+{
+public:
+    EventCallback event_callback;
+    GuiEventCallback gui_event_callback;
+};
+
+Window::Window(const char *title, i32 width, i32 height)
+    : m_title(title), m_width(width), m_height(height), m_event_impl(new EventCallbackImpl())
 {
 	SDL_InitFlags init_flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_CAMERA | SDL_INIT_AUDIO | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD;
 	SDL_Init(init_flags);
@@ -36,7 +43,7 @@ Window::Window(const std::string& title, i32 width, i32 height)
         }
     }
 
-	m_window = SDL_CreateWindow(title.c_str(), width, height, window_flags);
+	m_window = SDL_CreateWindow(title, width, height, window_flags);
     LOG_ASSERT(m_window, "Failed to create window");
 
     LOG_INFO("Window created");
@@ -44,28 +51,37 @@ Window::Window(const std::string& title, i32 width, i32 height)
 	SDL_ShowWindow(m_window);
 	SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
-    switch (Renderer::get_api()) {
-        case RendererAPI::OPENGL: {
-            // Load OpenGL
-            m_gl_context = SDL_GL_CreateContext(m_window);
-            if (!m_gl_context) {
-                LOG_ERROR("Failed to initialize OpenGL Context");
-                return;
-            }
+    switch (Renderer::get_api()) 
+    {
+    case RendererAPI::OPENGL: 
+    {
+        // Load OpenGL
+        m_gl_context = SDL_GL_CreateContext(m_window);
 
-            gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
-            const char *gl_version = reinterpret_cast<const char *>(glGetString(GL_VERSION));
-            const char *gl_vendor = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
-            LOG_INFO("OpenGL Info   : ");
-            LOG_INFO("    version   : {}", gl_version);
-            LOG_INFO("    vendor    : {}", gl_vendor);
-            break;
+        if (!m_gl_context) {
+            LOG_ERROR("Failed to initialize OpenGL Context");
+            return;
         }
-        case RendererAPI::VULKAN: {
-            break;
-        }
+
+        gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
+        const char *gl_version = reinterpret_cast<const char *>(glGetString(GL_VERSION));
+        const char *gl_vendor = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
+        LOG_INFO("OpenGL Info Engine: ");
+        LOG_INFO("    version       : {}", gl_version);
+        LOG_INFO("    vendor        : {}", gl_vendor);
+        break;
     }
-	m_is_running = true;
+    case RendererAPI::VULKAN: {
+        break;
+    }
+    }
+
+    m_is_running = true;
+}
+
+void Window::set_gl_context(SDL_GLContext context)
+{
+    SDL_GL_MakeCurrent(m_window, context);
 }
 
 void Window::destroy()
@@ -79,6 +95,9 @@ void Window::destroy()
 
 	m_window = nullptr;
 	m_gl_context = nullptr;
+
+    if (m_event_impl)
+        delete m_event_impl;
 }
 
 void Window::poll_events()
@@ -86,9 +105,9 @@ void Window::poll_events()
     SDL_Event event;
     SDL_PollEvent(&event);
 
-    if (m_gui_event_callback)
+    if (m_event_impl->gui_event_callback)
     {
-        m_gui_event_callback(&event);
+        m_event_impl->gui_event_callback(&event);
     }
 
     switch (event.type) {
@@ -96,7 +115,7 @@ void Window::poll_events()
     {
         m_is_running = false;
         WindowCloseEvent ev;
-        m_event_callback(ev);
+        m_event_impl->event_callback(ev);
         break;
     }
     case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
@@ -105,7 +124,7 @@ void Window::poll_events()
         m_fb_height = event.window.data2;
 
         FramebufferResizeEvent ev(m_fb_width, m_fb_height);
-        m_event_callback(ev);
+        m_event_impl->event_callback(ev);
         break;
     }
     case SDL_EVENT_WINDOW_MOVED:
@@ -118,20 +137,20 @@ void Window::poll_events()
     {
         const bool pressed = true;
         KeyPressedEvent ev(event.key.key, event.key.mod, 0);
-        m_event_callback(ev);
+        m_event_impl->event_callback(ev);
 
-        Input::keycodes[event.key.key] = pressed;
+        Input::set_key(event.key.key, pressed);
 
-        Input::modifiers[SDL_KMOD_SHIFT] = (event.key.mod & SDL_KMOD_SHIFT);
-        Input::modifiers[SDL_KMOD_CTRL]  = (event.key.mod & SDL_KMOD_CTRL);
-        Input::modifiers[SDL_KMOD_ALT]   = (event.key.mod & SDL_KMOD_ALT);
-        Input::modifiers[SDL_KMOD_GUI]   = (event.key.mod & SDL_KMOD_GUI);
-        Input::modifiers[SDL_KMOD_LALT]   = (event.key.mod & SDL_KMOD_LALT);
-        Input::modifiers[SDL_KMOD_LCTRL]   = (event.key.mod & SDL_KMOD_LCTRL);
-        Input::modifiers[SDL_KMOD_LSHIFT]   = (event.key.mod & SDL_KMOD_LSHIFT);
-        Input::modifiers[SDL_KMOD_RALT]   = (event.key.mod & SDL_KMOD_RALT);
-        Input::modifiers[SDL_KMOD_RCTRL]   = (event.key.mod & SDL_KMOD_RCTRL);
-        Input::modifiers[SDL_KMOD_RSHIFT]   = (event.key.mod & SDL_KMOD_RSHIFT);
+        Input::set_modifier(SDL_KMOD_SHIFT, event.key.mod & SDL_KMOD_SHIFT);
+        Input::set_modifier(SDL_KMOD_CTRL, event.key.mod & SDL_KMOD_CTRL);
+        Input::set_modifier(SDL_KMOD_ALT, event.key.mod & SDL_KMOD_ALT);
+        Input::set_modifier(SDL_KMOD_GUI, event.key.mod & SDL_KMOD_GUI);
+        Input::set_modifier(SDL_KMOD_LALT, event.key.mod & SDL_KMOD_LALT);
+        Input::set_modifier(SDL_KMOD_LCTRL, event.key.mod & SDL_KMOD_LCTRL);
+        Input::set_modifier(SDL_KMOD_LSHIFT, event.key.mod & SDL_KMOD_LSHIFT);
+        Input::set_modifier(SDL_KMOD_RALT, event.key.mod & SDL_KMOD_RALT);
+        Input::set_modifier(SDL_KMOD_RCTRL, event.key.mod & SDL_KMOD_RCTRL);
+        Input::set_modifier(SDL_KMOD_RSHIFT, event.key.mod & SDL_KMOD_RSHIFT);
 
         break;
     }
@@ -139,65 +158,64 @@ void Window::poll_events()
     {
         const bool pressed = false;
         KeyReleasedEvent ev(event.key.key, event.key.mod);
-        m_event_callback(ev);
+        m_event_impl->event_callback(ev);
 
         // Update key state
-        Input::keycodes[event.key.key] = pressed;
+        Input::set_key(event.key.key, pressed);
 
         // Check if the modifier is still active
-        Input::modifiers[SDL_KMOD_SHIFT] = (SDL_GetModState() & SDL_KMOD_SHIFT);
-        Input::modifiers[SDL_KMOD_CTRL]  = (SDL_GetModState() & SDL_KMOD_CTRL);
-        Input::modifiers[SDL_KMOD_ALT]   = (SDL_GetModState() & SDL_KMOD_ALT);
-        Input::modifiers[SDL_KMOD_GUI]   = (SDL_GetModState() & SDL_KMOD_GUI);
-        Input::modifiers[SDL_KMOD_LALT]   = (SDL_GetModState() & SDL_KMOD_LALT);
-        Input::modifiers[SDL_KMOD_LCTRL]   = (SDL_GetModState() & SDL_KMOD_LCTRL);
-        Input::modifiers[SDL_KMOD_LSHIFT]   = (SDL_GetModState() & SDL_KMOD_LSHIFT);
-        Input::modifiers[SDL_KMOD_RALT]   = (SDL_GetModState() & SDL_KMOD_RALT);
-        Input::modifiers[SDL_KMOD_RCTRL]   = (SDL_GetModState() & SDL_KMOD_RCTRL);
-        Input::modifiers[SDL_KMOD_RSHIFT]   = (SDL_GetModState() & SDL_KMOD_RSHIFT);
+        Input::set_modifier(SDL_KMOD_SHIFT, event.key.mod & SDL_KMOD_SHIFT);
+        Input::set_modifier(SDL_KMOD_CTRL, event.key.mod & SDL_KMOD_CTRL);
+        Input::set_modifier(SDL_KMOD_ALT, event.key.mod & SDL_KMOD_ALT);
+        Input::set_modifier(SDL_KMOD_GUI, event.key.mod & SDL_KMOD_GUI);
+        Input::set_modifier(SDL_KMOD_LALT, event.key.mod & SDL_KMOD_LALT);
+        Input::set_modifier(SDL_KMOD_LCTRL, event.key.mod & SDL_KMOD_LCTRL);
+        Input::set_modifier(SDL_KMOD_LSHIFT, event.key.mod & SDL_KMOD_LSHIFT);
+        Input::set_modifier(SDL_KMOD_RALT, event.key.mod & SDL_KMOD_RALT);
+        Input::set_modifier(SDL_KMOD_RCTRL, event.key.mod & SDL_KMOD_RCTRL);
+        Input::set_modifier(SDL_KMOD_RSHIFT, event.key.mod & SDL_KMOD_RSHIFT);
 
         break;
     }
     case SDL_EVENT_TEXT_INPUT:
     {
         KeyTypedEvent ev(event.text.text[0]);
-        m_event_callback(ev);
+        m_event_impl->event_callback(ev);
         break;
     }
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
     {
-        Input::mouse_buttons[event.button.button] = true;
+        Input::set_mouse_button(event.button.button, true);
         MouseButtonPressedEvent ev(event.button.button);
-        m_event_callback(ev);
+        m_event_impl->event_callback(ev);
         break;
     }
     case SDL_EVENT_MOUSE_BUTTON_UP:
     {
-        Input::mouse_buttons[event.button.button] = false;
+        Input::set_mouse_button(event.button.button, false);
         MouseButtonReleasedEvent ev(event.button.button);
-        m_event_callback(ev);
+        m_event_impl->event_callback(ev);
         break;
     }
     case SDL_EVENT_MOUSE_WHEEL:
     {
         MouseScrolledEvent ev(event.wheel.x, event.wheel.y);
-        m_event_callback(ev);
+        m_event_impl->event_callback(ev);
         break;
     }
     case SDL_EVENT_MOUSE_MOTION:
     {
-        Input::mouse_position.x = static_cast<i32>(event.motion.x);
-        Input::mouse_position.y = static_cast<i32>(event.motion.y);
+        Input::set_mouse_position(event.motion.x, event.motion.y);
         MouseMovedEvent ev(event.motion.x, event.motion.y);
-        m_event_callback(ev);
+        m_event_impl->event_callback(ev);
         break;
     }
     case SDL_EVENT_DROP_FILE:
     {
-        std::vector<std::filesystem::path> filepaths;
+        std::vector<const char *> filepaths;
         filepaths.emplace_back(event.drop.data);
-        WindowDropEvent ev(std::move(filepaths));
-        m_event_callback(ev);
+        WindowDropEvent ev(filepaths.data(), static_cast<i32>(filepaths.size()));
+        m_event_impl->event_callback(ev);
         break;
     }
     }
@@ -274,12 +292,12 @@ void Window::set_position(i32 x, i32 y)
 
 void Window::set_event_callback(const EventCallback& callback)
 {
-	m_event_callback = callback;
+	m_event_impl->event_callback = callback;
 }
 
 void Window::set_gui_event_callback(const GuiEventCallback &callback)
 {
-    m_gui_event_callback = callback;
+    m_event_impl->gui_event_callback = callback;
 }
 
 void Window::minimize()

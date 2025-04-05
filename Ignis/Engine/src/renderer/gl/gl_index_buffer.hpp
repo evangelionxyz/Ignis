@@ -3,7 +3,7 @@
 #include <core/types.hpp>
 #include "gl_buffer.hpp"
 
-class GLIndexBuffer : public GLBuffer {
+class IGNIS_API GLIndexBuffer : public GLBuffer {
 public:
 
     GLIndexBuffer(u32 size);

@@ -26,5 +26,5 @@ Ref<Asset> AssetImporter::import(AssetHandle handle, const AssetMetaData &metada
 
 Ref<Texture> AssetImporter::import_texture(AssetHandle handle, const AssetMetaData &metadata)
 {
-    return Texture::create(metadata.filepath.string());
+    return Texture::create(metadata.filepath.string().c_str());
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "base.hpp"
+
 #include <memory>
 #include <glm/glm.hpp>
 

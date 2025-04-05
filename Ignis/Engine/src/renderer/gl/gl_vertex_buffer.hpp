@@ -1,7 +1,7 @@
 #pragma once
 #include "gl_buffer.hpp"
 
-class GLVertexBuffer : public GLBuffer{
+class IGNIS_API GLVertexBuffer : public GLBuffer{
 public:
     GLVertexBuffer(u32 size);
     GLVertexBuffer(const f32 *vertices, u32 size);

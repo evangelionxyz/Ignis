@@ -14,11 +14,12 @@ enum CameraType
     CAMERA_TYPE_3D
 };
 
-class Camera : public Object
+class IGNIS_API Camera : public Object
 {
 public:
     Camera() = default;
     Camera(CameraType type, const f32 width, const f32 height, const glm::vec3 &position = glm::vec3(0.0f, 0.0f, 1.0f));
+    ~Camera();
 
     void resize(const glm::vec2 &size);
     void set_zoom(f32 zoom);
@@ -42,13 +43,6 @@ public:
     glm::vec3 get_right() const;
 
 private:
-    CameraType m_type;
-    f32 m_zoom = 3.0f, m_aspect_ratio = 1.0f;
-    f32 m_yaw = 0.0f, m_pitch = 0.0f;
-
-    glm::vec2 m_size;
-    glm::vec3 m_position;
-    glm::mat4 m_view_matrix;
-    glm::mat4 m_projection_matrix;
-
+    class Impl;
+    Impl *m_impl;
 };

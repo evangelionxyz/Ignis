@@ -6,62 +6,20 @@
 #include <string>
 #include <filesystem>
 
-static GLenum get_gl_texture_format(const TextureFormat format)
+extern "C"
 {
-    switch (format) {
-        case TEXTURE_FORMAT_RGB:
-            return GL_RGB;
-        case TEXTURE_FORMAT_RGBA:
-        case TEXTURE_FORMAT_RGBA8:
-        case TEXTURE_FORMAT_RGBA16F:
-            return GL_RGBA;
-        case TEXTURE_FORMAT_DEPTH:
-            return GL_DEPTH_COMPONENT;
-        case TEXTURE_FORMAT_DEPTH24STENCIL8:
-            return GL_DEPTH24_STENCIL8;
-        case TEXTURE_FORMAT_RED_INTEGER:
-            return GL_RED_INTEGER;
-    }
-    return GL_NONE;
+IGNIS_API GLenum get_gl_texture_format(const TextureFormat format);
+IGNIS_API GLenum get_gl_attachment_type(const TextureFormat format);
+IGNIS_API i32 get_gl_texture_internal_format(const TextureFormat format);
+IGNIS_API GLenum get_gl_texture_filter(const TextureFilter filter);
 }
 
-static GLenum get_gl_attachment_type(const TextureFormat format)
-{
-    switch (format) {
-        case TEXTURE_FORMAT_DEPTH24STENCIL8: return GL_DEPTH_STENCIL_ATTACHMENT;
-        case TEXTURE_FORMAT_DEPTH: return GL_DEPTH_ATTACHMENT;
-    }
-    return GL_NONE;
-}
 
-static i32 get_gl_texture_internal_format(const TextureFormat format)
-{
-    switch (format) {
-        case TEXTURE_FORMAT_RGB: return GL_RGB8;
-        case TEXTURE_FORMAT_RGBA: return GL_RGBA8;
-        case TEXTURE_FORMAT_RGBA8: return GL_RGBA8;
-        case TEXTURE_FORMAT_RGBA16F: return GL_RGBA16F;
-        case TEXTURE_FORMAT_DEPTH: return GL_DEPTH_COMPONENT;
-        case TEXTURE_FORMAT_DEPTH24STENCIL8:return GL_DEPTH24_STENCIL8;
-        case TEXTURE_FORMAT_RED_INTEGER:return GL_R32I;
-    }
-    return GL_NONE;
-}
-
-static GLenum get_gl_texture_filter(const TextureFilter filter)
-{
-    switch (filter) {
-        case TEXTURE_FILTER_NEAREST: return GL_NEAREST;
-        case TEXTURE_FILTER_LINEAR: return GL_LINEAR;
-    }
-    return GL_NONE;
-}
-
-class GLTexture : public Texture {
+class IGNIS_API GLTexture : public Texture {
 public:
     GLTexture() = default;
     GLTexture(const TextureSpec &spec, const Buffer buffer);
-    GLTexture(const std::string &filepath);
+    GLTexture(const char *filepath);
 
     void set_data(const Buffer buffer) override;
     void bind(i32 index) override;

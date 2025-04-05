@@ -2,7 +2,7 @@
 #include "scene/scene.hpp"
 #include "serializer.hpp"
 
-class SceneSerializer
+class IGNIS_API SceneSerializer
 {
 public:
     SceneSerializer(Ref<Scene> scene, const std::filesystem::path &filepath);
@@ -12,6 +12,6 @@ public:
     static Ref<Scene> deserialize(const std::filesystem::path &filepath);
 
 private:
-    Ref<Scene> m_scene;
-    std::filesystem::path m_filepath;
+    class Impl;
+    Impl *m_impl;
 };

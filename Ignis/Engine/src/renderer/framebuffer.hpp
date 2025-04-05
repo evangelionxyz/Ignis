@@ -1,28 +1,32 @@
 #pragma once
 #include "texture.hpp"
 
-struct FramebufferTextureSpec
+struct IGNIS_API FramebufferTextureSpec
 {
     FramebufferTextureSpec() = default;
     explicit FramebufferTextureSpec(const TextureFormat format)
         : format(format)
     {
     }
+
     TextureFormat format;
 };
 
-struct FramebufferAttachmentSpec
+struct IGNIS_API FramebufferAttachmentSpec
 {
     FramebufferAttachmentSpec() = default;
-    FramebufferAttachmentSpec(const std::initializer_list<FramebufferTextureSpec> attachments)
-        : texture_attachments(attachments)
-    {
-    }
+    FramebufferAttachmentSpec(const std::initializer_list<FramebufferTextureSpec> attachments);
+    
+    void destroy();
 
-    std::vector<FramebufferTextureSpec> texture_attachments;
+    std::vector<FramebufferTextureSpec> &get_attachments();
+
+private:
+    struct Impl;
+    Impl *m_impl = nullptr;
 };
 
-struct FramebufferSpec
+struct IGNIS_API FramebufferSpec
 {
     FramebufferAttachmentSpec attachments;
     i32 width = 0, height = 0, samples = 1;
@@ -30,7 +34,7 @@ struct FramebufferSpec
     bool read_buffer = false;
 };
 
-class Framebuffer : public Object
+class IGNIS_API Framebuffer : public Object
 {
 public:
     virtual void resize(u32 width, u32 height) = 0;

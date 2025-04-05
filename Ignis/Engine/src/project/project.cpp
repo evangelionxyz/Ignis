@@ -17,3 +17,8 @@ Project *Project::get_active()
 {
     return s_active;
 }
+
+void Project::destroy()
+{
+    
+}

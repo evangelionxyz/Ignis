@@ -23,7 +23,7 @@ enum EventCategory
 	EventCategory_MouseButton = BIT(4)
 };
 
-class Event
+class IGNIS_API Event
 {
 public:
 	virtual ~Event() = default;
@@ -33,7 +33,7 @@ public:
 	virtual EventType get_event_type() const = 0;
 	virtual int get_category_flags() const = 0;
 
-	virtual std::string to_string() const = 0;
+	virtual const char *to_string() const = 0;
 
 	bool is_in_category(EventCategory category)
 	{
@@ -41,7 +41,7 @@ public:
 	}
 };
 
-class EventDispatcher
+class IGNIS_API EventDispatcher
 {
 public:
 	EventDispatcher(Event& event)

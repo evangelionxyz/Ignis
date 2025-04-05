@@ -4,7 +4,7 @@
 
 #include "renderer/framebuffer.hpp"
 
-class GLFramebuffer : public Framebuffer {
+class IGNIS_API GLFramebuffer : public Framebuffer {
 public:
     GLFramebuffer() = default;
     GLFramebuffer(const FramebufferSpec &spec);
@@ -18,15 +18,7 @@ public:
 
 private:
     void invalidate();
-
-    u32 m_id = 0;
-    u32 m_depth_attachment = 0;
-    u32 m_color_attachment_index = 0;
-
-    std::vector<FramebufferTextureSpec> m_color_attachment_specs;
-    FramebufferTextureSpec m_depth_attachment_spec{};
-
-    std::vector<u32> m_color_attachments;
-    FramebufferSpec m_spec;
+    class Impl;
+    Impl *m_impl;
 };
 

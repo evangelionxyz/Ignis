@@ -6,18 +6,17 @@
 
 #include <filesystem>
 
-struct ProjectInfo
+struct IGNIS_API ProjectInfo
 {
-    std::string name;
+    const char *name;
+    const char *filepath;
+    const char *asset_registry_filepath = "asset_registry";
     AssetHandle handle;
-    std::filesystem::path filepath;
 
     AssetHandle default_scene_handle;
-
-    std::string asset_registry_filepath = "asset_registry";
 };
 
-class Project : public Asset
+class IGNIS_API Project : public Asset
 {
 public:
     Project() = default;

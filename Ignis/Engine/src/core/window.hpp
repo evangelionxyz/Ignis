@@ -11,14 +11,16 @@
 
 #include <Windows.h>
 
-class Window : public Object
+using EventCallback = std::function<void(Event &)>;
+using GuiEventCallback = std::function<void(const SDL_Event *)>;
+
+class IGNIS_API Window : public Object
 {
 private:
-	using EventCallback = std::function<void(Event &)>;
-	using GuiEventCallback = std::function<void(const SDL_Event *)>;
+	
 public:
 	Window() = default;
-	Window(const std::string& title, i32 width, i32 height);
+	Window(const char *title, i32 width, i32 height);
 
 	void destroy() override;
 
@@ -44,6 +46,9 @@ public:
 	const char* get_title();
 
 	SDL_Window* get_native_window();
+
+	void set_gl_context(SDL_GLContext context);
+	
 	SDL_GLContext get_gl_context();
 
 	HWND get_native_handle();
@@ -57,6 +62,6 @@ private:
 
 	const char* m_title;
 
-	EventCallback m_event_callback;
-	GuiEventCallback m_gui_event_callback;
+	class EventCallbackImpl;
+	EventCallbackImpl *m_event_impl;
 };

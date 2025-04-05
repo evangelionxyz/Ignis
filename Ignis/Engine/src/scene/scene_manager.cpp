@@ -1,9 +1,9 @@
 #include "scene.hpp"
 #include "scene_manager.hpp"
 
-std::unordered_map<AssetHandle, entt::registry> SceneManager::scene_registry_map;
-std::unordered_map<std::string, Ref<Scene>> SceneManager::m_scenes;
-Ref<Scene> SceneManager::m_current_scene;
+std::unordered_map<AssetHandle, entt::registry> scene_registry_map;
+std::unordered_map<std::string, Ref<Scene>> m_scenes;
+Ref<Scene> m_current_scene;
 
 Ref<Scene> SceneManager::create_scene(const std::string &name)
 {

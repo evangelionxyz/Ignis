@@ -10,21 +10,20 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
-class Logger {
+class IGNIS_API Logger {
 public:
     static void init();
     static void shutdown();
-    static Ref<spdlog::async_logger> &get_logger() { return s_logger; }
+    static spdlog::async_logger *get_logger();
 
 private:
-    static Ref<spdlog::async_logger> s_logger;
-    static Ref<spdlog::sinks::stdout_color_sink_mt> s_console_sink;
+    class Impl;
 };
 
 namespace fmt {
 
 template<>
-struct formatter<std::filesystem::path>
+struct IGNIS_API formatter<std::filesystem::path>
 {
     template<typename ParseContext>
     constexpr auto parse(ParseContext &ctx)

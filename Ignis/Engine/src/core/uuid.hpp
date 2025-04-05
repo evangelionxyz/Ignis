@@ -5,7 +5,7 @@
 #include <functional>
 #include <string>
 
-class UUID
+class IGNIS_API UUID
 {
 public:
     UUID();

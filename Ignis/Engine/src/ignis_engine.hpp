@@ -2,7 +2,7 @@
 #include <core/application.hpp>
 #include <core/base.hpp>
 #include <core/window.hpp>
-
+#include <core/imgui_layer.hpp>
 #include <core/input/event.hpp>
 #include <core/input/key_event.hpp>
 #include <core/input/app_event.hpp>
@@ -18,8 +18,6 @@
 #include <renderer/gl/gl_texture.hpp>
 #include <renderer/camera.hpp>
 #include <renderer/renderer.hpp>
-#include <core/imgui_layer.hpp>
-#include <core/imgui_layer.hpp>
 #include <scene/scene.hpp>
 #include <scene/components.hpp>
 #include <math/math.hpp>
@@ -29,6 +27,7 @@
 #include <serializer/project_serializer.hpp>
 #include <serializer/scene_serializer.hpp>
 
+#include <SDL3/SDL.h>
 #include <SDL3/SDL_gpu.h>
 #include <glad/glad.h>
 

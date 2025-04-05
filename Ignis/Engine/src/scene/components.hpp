@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/base.hpp"
+
 #include "core/uuid.hpp"
 #include "assets/asset.hpp"
 
@@ -9,64 +11,81 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
-class Texture;
+class IGNIS_API Texture;
 
-struct Component
+class IGNIS_API Component
 {
+public:
     virtual void destroy() {};
 };
 
-struct ID : Component
+class IGNIS_API ID : Component
 {
+public:
     ID();
-    ID(const std::string &name, UUID uuid = UUID());
-    std::string name;
+    ID(const char *name, UUID uuid = UUID());
+
+    void destroy() override;
+
+    std::vector<UUID> &get_children();
+
+    const char *name;
     UUID uuid;
-    std::vector<UUID> children;
+public:
+    class Impl;
+    Impl *m_impl;
 };
 
-struct Transform : Component
+class IGNIS_API Transform : Component
 {
+public:
     Transform();
     Transform(const Transform &other);
     Transform(const glm::vec3 &translation, const glm::quat &rotation, const glm::vec3 &scale);
 
-    glm::mat4 world_transform, local_transform;
-    glm::vec3 world_translation, local_translation;
-    glm::vec3 world_scale, local_scale;
-    glm::quat world_rotation, local_rotation;
+    ~Transform();
 
-    glm::mat4 get_world_transform()
-    {
-        world_transform = glm::translate(glm::mat4(1.0f), world_translation)
-            * glm::toMat4(world_rotation) * glm::scale(glm::mat4(1.0f), world_scale);
-        return world_transform;
-    }
+    void set_world_translation(const glm::vec3 &translation);
+    void set_world_rotation(const glm::quat &rotation);
+    void set_world_scale(const glm::vec3 &scale);
 
-    glm::mat4 get_local_transform()
-    {
-        local_transform = glm::translate(glm::mat4(1.0f), local_translation)
-            * glm::toMat4(local_rotation) * glm::scale(glm::mat4(1.0f), local_scale);
-        return local_transform;
-    }
+    void set_local_translation(const glm::vec3 &translation);
+    void set_local_rotation(const glm::quat &rotation);
+    void set_local_scale(const glm::vec3 &scale);
 
-    glm::vec3 get_world_euler_rotation()
-    {
-        return glm::eulerAngles(world_rotation);
-    }
+    glm::mat4 get_world_transform() const;
+    glm::mat4 get_local_transform() const;
+    glm::vec3 get_world_euler_rotation() const;
+    glm::vec3 get_local_euler_rotation() const;
 
-    glm::vec3 get_local_euler_rotation()
-    {
-        return glm::eulerAngles(local_rotation);
-    }
+    const glm::vec3 &get_world_translation() const;
+    const glm::quat &get_world_rotation() const;
+    const glm::vec3 &get_world_scale() const;
+
+    const glm::vec3 &get_local_translation() const;
+    const glm::quat &get_local_rotation() const;
+    const glm::vec3 &get_local_scale() const;
+
+private:
+    class Impl;
+    Impl *m_impl;
 };
 
-struct Sprite : Component
+class IGNIS_API Sprite : Component
 {
+public:
     Sprite();
     Sprite(const Sprite &);
     Sprite(const glm::vec4 &color);
 
-    glm::vec4 color;
-    AssetHandle texture_handle;
+    ~Sprite();
+
+    const glm::vec4 &get_color() const;
+    void set_color(const glm::vec4 &color);
+
+    AssetHandle &get_texture_handle() const;
+    void set_texture_handle(AssetHandle handle);
+private:
+    class Impl;
+    Impl *m_impl;
 };

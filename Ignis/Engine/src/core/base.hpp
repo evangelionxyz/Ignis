@@ -1,34 +1,42 @@
 #pragma once
 
 #ifdef _WIN32
-#ifndef PLATFORM_WINDOWS
-#define PLATFORM_WINDOWS
-#endif
+    #ifndef PLATFORM_WINDOWS
+        #define PLATFORM_WINDOWS
+    #endif
 #elif __linux__ || __GNUG__
-#ifndef PLATFORM_LINUX
-#define PLATFORM_LINUX
-#endif
+    #ifndef PLATFORM_LINUX
+        #define PLATFORM_LINUX
+    #endif
 #endif
 
-#ifdef DLL_EXPORT
-#define API __declspec(dllexport)
+#ifdef SHARED_BUILD
+    #ifdef _WIN32
+        #define IGNIS_API __declspec(dllexport)
+    #else
+        #define IGNIS_API __attribute__((visibility("default")))
+    #endif
 #else
-#define API __declspec(dllimport)
+    #ifdef _WIN32
+        #define IGNIS_API __declspec(dllimport)
+    #else
+        #define IGNIS_API
+    #endif
 #endif
 
 #ifdef DEBUG_BUILD
-#define ENABLE_ASSERTS
-#ifdef _WIN32
-#define DEBUGBREAK() __debugbreak()
-#elif __linux__
-#define DEBUGBREAK() __builtin_trap();
-#endif
+    #define ENABLE_ASSERTS
+    #ifdef _WIN32
+        #define DEBUGBREAK() __debugbreak()
+    #elif __linux__
+        #define DEBUGBREAK() __builtin_trap();
+    #endif
 #else
 #define DEBUGBREAK()
 #endif
 
 #ifndef RELEASE_
-#define ENABLE_VERIFY
+    #define ENABLE_VERIFY
 #endif
 
 #define EXPAND_MACRO(x)

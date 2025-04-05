@@ -9,17 +9,11 @@
 
 class Scene;
 
-class SceneManager {
+class IGNIS_API SceneManager {
 public:
     static Ref<Scene> create_scene(const std::string &name);
     static Ref<Scene> find_scene(const std::string &name);
     static bool remove_scene(const std::string &name);
 
     static void set_active(const Ref<Scene> &scene);
-
-    static std::unordered_map<AssetHandle, entt::registry> scene_registry_map;
-
-private:
-    static std::unordered_map<std::string, Ref<Scene>> m_scenes;
-    static Ref<Scene> m_current_scene;
 };

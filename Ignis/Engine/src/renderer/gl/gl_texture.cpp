@@ -3,6 +3,57 @@
 
 #include "core/buffer.hpp"
 
+IGNIS_API GLenum get_gl_texture_format(const TextureFormat format)
+{
+    switch (format) {
+        case TEXTURE_FORMAT_RGB:
+            return GL_RGB;
+        case TEXTURE_FORMAT_RGBA:
+        case TEXTURE_FORMAT_RGBA8:
+        case TEXTURE_FORMAT_RGBA16F:
+            return GL_RGBA;
+        case TEXTURE_FORMAT_DEPTH:
+            return GL_DEPTH_COMPONENT;
+        case TEXTURE_FORMAT_DEPTH24STENCIL8:
+            return GL_DEPTH24_STENCIL8;
+        case TEXTURE_FORMAT_RED_INTEGER:
+            return GL_RED_INTEGER;
+    }
+    return GL_NONE;
+}
+
+IGNIS_API GLenum get_gl_attachment_type(const TextureFormat format)
+{
+    switch (format) {
+        case TEXTURE_FORMAT_DEPTH24STENCIL8: return GL_DEPTH_STENCIL_ATTACHMENT;
+        case TEXTURE_FORMAT_DEPTH: return GL_DEPTH_ATTACHMENT;
+    }
+    return GL_NONE;
+}
+
+IGNIS_API i32 get_gl_texture_internal_format(const TextureFormat format)
+{
+    switch (format) {
+        case TEXTURE_FORMAT_RGB: return GL_RGB8;
+        case TEXTURE_FORMAT_RGBA: return GL_RGBA8;
+        case TEXTURE_FORMAT_RGBA8: return GL_RGBA8;
+        case TEXTURE_FORMAT_RGBA16F: return GL_RGBA16F;
+        case TEXTURE_FORMAT_DEPTH: return GL_DEPTH_COMPONENT;
+        case TEXTURE_FORMAT_DEPTH24STENCIL8:return GL_DEPTH24_STENCIL8;
+        case TEXTURE_FORMAT_RED_INTEGER:return GL_R32I;
+    }
+    return GL_NONE;
+}
+
+IGNIS_API GLenum get_gl_texture_filter(const TextureFilter filter)
+{
+    switch (filter) {
+        case TEXTURE_FILTER_NEAREST: return GL_NEAREST;
+        case TEXTURE_FILTER_LINEAR: return GL_LINEAR;
+    }
+    return GL_NONE;
+}
+
 GLTexture::GLTexture(const TextureSpec &spec, const Buffer buffer)
     : m_spec(spec)
 {
@@ -28,11 +79,11 @@ GLTexture::GLTexture(const TextureSpec &spec, const Buffer buffer)
     }
 }
 
-GLTexture::GLTexture(const std::string &filepath)
+GLTexture::GLTexture(const char *filepath)
 {
     LOG_ASSERT(std::filesystem::exists(filepath), "[Texture] File does not exists");
 
-    const stbi_uc *pixel = stbi_load(filepath.c_str(), &m_spec.width, &m_spec.height, &m_spec.channels, 0);
+    const stbi_uc *pixel = stbi_load(filepath, &m_spec.width, &m_spec.height, &m_spec.channels, 0);
     LOG_ASSERT(pixel, "[Texture] Failed to load texture");
 
     switch (m_spec.channels) {

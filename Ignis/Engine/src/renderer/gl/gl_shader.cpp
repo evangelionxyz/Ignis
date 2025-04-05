@@ -4,23 +4,38 @@
 #include <core/logger.hpp>
 #include <iostream>
 
+#include <string>
+
+
+class GLShader::Impl
+{
+public:
+    std::vector<u32> shaders;
+    std::unordered_map<const char *, i32> uniform_locations;
+};
+
+GLShader::GLShader()
+    : m_impl(new GLShader::Impl())
+{
+}
+
+
 void GLShader::create_program()
 {
     m_program = glCreateProgram();
     LOG_TRACE("[Shader] program created");
 }
 
-uint32_t GLShader::create_shader(const std::string &filepath, ShaderType shader_type)
+u32 GLShader::create_shader(const char *filepath, ShaderType shader_type)
 {
-    std::string shader_source = read_file(filepath);
-    uint32_t shader = glCreateShader(get_gl_shader_type(shader_type));
+    const char *shader_source = read_file(filepath);
+    u32 shader = glCreateShader(get_gl_shader_type(shader_type));
 
-    const char *source_ptr = shader_source.c_str();
-    glShaderSource(shader, 1, &source_ptr, 0);
+    glShaderSource(shader, 1, &shader_source, 0);
     return shader;
 }
 
-void GLShader::compile(uint32_t shader)
+void GLShader::compile(u32 shader)
 {
     glCompileShader(shader);
 
@@ -40,7 +55,7 @@ void GLShader::compile(uint32_t shader)
 
     glAttachShader(m_program, shader);
 
-    m_shaders.push_back(shader);
+    m_impl->shaders.push_back(shader);
 }
 
 void GLShader::link()
@@ -63,7 +78,7 @@ void GLShader::link()
         destroy_shaders();
     }
 
-    for (auto &shader : m_shaders)
+    for (auto &shader : m_impl->shaders)
     {
         glDetachShader(m_program, shader);
     }
@@ -71,12 +86,12 @@ void GLShader::link()
 
 void GLShader::destroy_shaders()
 {
-    for (auto &shader : m_shaders)
+    for (auto &shader : m_impl->shaders)
     {
        glDeleteShader(shader); 
     }
 
-    m_shaders.clear();
+    m_impl->shaders.clear();
 }
 
 void GLShader::destroy()
@@ -87,6 +102,9 @@ void GLShader::destroy()
         glDeleteProgram(m_program);
         LOG_TRACE("[Shader] Program {} destroyed", m_program);
     }
+
+    if (m_impl)
+        delete m_impl;
 }
 
 void GLShader::use()
@@ -94,45 +112,45 @@ void GLShader::use()
     glUseProgram(m_program);
 }
 
-void GLShader::set_uniform_int(const std::string &name, const i32 value, i32 count)
+void GLShader::set_uniform_int(const char *name, const i32 value, i32 count)
 {
     glUniform1iv(get_uniform_location(name), count, &value);
 }
 
-void GLShader::set_uniform_float(const std::string &name, const f32 value, i32 count)
+void GLShader::set_uniform_float(const char *name, const f32 value, i32 count)
 {
     glUniform1fv(get_uniform_location(name), count, &value);
 }
 
-void GLShader::set_uniform_vec2(const std::string &name, const glm::vec2 &value, i32 count)
+void GLShader::set_uniform_vec2(const char *name, const glm::vec2 &value, i32 count)
 {
     glUniform2fv(get_uniform_location(name), count, glm::value_ptr(value));
 }
 
-void GLShader::set_uniform_vec3(const std::string &name, const glm::vec3 &value, i32 count)
+void GLShader::set_uniform_vec3(const char *name, const glm::vec3 &value, i32 count)
 {
     glUniform3fv(get_uniform_location(name), count, glm::value_ptr(value));
 }
 
-void GLShader::set_uniform_vec4(const std::string &name, const glm::vec4 &value, i32 count)
+void GLShader::set_uniform_vec4(const char *name, const glm::vec4 &value, i32 count)
 {
     glUniform4fv(get_uniform_location(name), count, glm::value_ptr(value));
 }
 
-void GLShader::set_uniform_mat4(const std::string &name, const glm::mat4 &value, i32 count)
+void GLShader::set_uniform_mat4(const char *name, const glm::mat4 &value, i32 count)
 {
     glUniformMatrix4fv(get_uniform_location(name), count, false, glm::value_ptr(value));
 }
 
-i32 GLShader::get_uniform_location(const std::string &name)
+i32 GLShader::get_uniform_location(const char *name)
 {
-    if (m_uniform_locations.contains(name))
-        return m_uniform_locations[name];
+    if (m_impl->uniform_locations.contains(name))
+        return m_impl->uniform_locations[name];
 
-    i32 location = glGetUniformLocation(m_program, name.c_str());
+    i32 location = glGetUniformLocation(m_program, name);
     if (location > -1)
     {
-        m_uniform_locations[name] = location;
+        m_impl->uniform_locations[name] = location;
         return location;
     }
 

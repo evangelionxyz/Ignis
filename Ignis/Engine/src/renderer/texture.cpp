@@ -11,7 +11,7 @@ Ref<Texture> Texture::create(const TextureSpec &spec, const Buffer buffer)
     }
 }
 
-Ref<Texture> Texture::create(const std::string &filepath)
+Ref<Texture> Texture::create(const char *filepath)
 {
     switch (Renderer::get_api()) {
         case RendererAPI::OPENGL: return CreateRef<GLTexture>(filepath);

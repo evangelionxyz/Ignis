@@ -1,13 +1,16 @@
 #pragma once
 #include "object.hpp"
 
+#include <imgui.h>
+
 class Window;
-class ImGuiLayer : public Object
+class IGNIS_API ImGuiLayer : public Object
 {
 public:
     ImGuiLayer() = default;
-    ImGuiLayer(Window *window);
 
+    void init(Window *window);
+    void set_context(ImGuiContext *context);
     void begin_render();
     void end_render();
 

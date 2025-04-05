@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-struct Buffer
+struct IGNIS_API Buffer
 {
     u8* data = nullptr;
     u64 size = 0;
@@ -54,7 +54,7 @@ struct Buffer
     }
 };
 
-struct ScopedBuffer
+struct IGNIS_API ScopedBuffer
 {
     explicit ScopedBuffer(const Buffer buffer)
         : m_buffer(buffer)

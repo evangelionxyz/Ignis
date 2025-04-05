@@ -5,7 +5,7 @@
 #include "gl_vertex_buffer.hpp"
 #include "gl_index_buffer.hpp"
 
-struct QuadVertex
+struct IGNIS_API QuadVertex
 {
     glm::vec2 position;
     glm::vec2 texture_coord;
@@ -25,7 +25,7 @@ struct GLR2DData
     u32 quad_max_vertices = 1024;
 };
 
-struct GLR2D
+struct IGNIS_API GLR2D
 {
     static void init();
     static void shutdown();

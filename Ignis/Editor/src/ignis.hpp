@@ -21,6 +21,9 @@ public:
 
     Window *get_window();
 private:
+    void create_imgui_context();
+    void destroy_imgui_context();
+
     void init();
     void on_update(f32 delta_time);
     void on_gui_render(f32 delta_time);
@@ -59,4 +62,7 @@ private:
 
     std::unordered_map<std::string, Ref<Texture>> m_icons;
     std::filesystem::path m_current_scene_path;
+
+    ImGuiContext *m_imgui_context;
+    SDL_GLContext m_gl_context;
 };

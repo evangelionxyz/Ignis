@@ -34,10 +34,10 @@ struct convert<Rect>
     static Node encode(const Rect &rect)
     {
         Node node;
-        node.push_back(rect.min.x);
-        node.push_back(rect.min.y);
-        node.push_back(rect.max.x);
-        node.push_back(rect.max.y);
+        node.push_back(rect.get_min().x);
+        node.push_back(rect.get_min().y);
+        node.push_back(rect.get_max().x);
+        node.push_back(rect.get_max().y);
         return node;
     }
 
@@ -226,7 +226,7 @@ struct convert<glm::quat>
 static YAML::Emitter &operator<<(YAML::Emitter &out, const Rect &rect)
 {
 	out << YAML::Flow;
-	out << YAML::BeginSeq << rect.min.x << rect.min.y << rect.max.x << rect.max.y << YAML::EndSeq;
+	out << YAML::BeginSeq << rect.get_min().x << rect.get_min().y << rect.get_max().x << rect.get_max().y << YAML::EndSeq;
 	return out;
 }
 
@@ -258,10 +258,12 @@ static YAML::Emitter &operator<<(YAML::Emitter &out, const glm::quat &q)
 	return out;
 }
 
-class Serializer
+class IGNIS_API Serializer
 {
 public:
     Serializer() = default;
+	~Serializer();
+
     Serializer(const std::filesystem::path &filepath);
 
     void begin_map();
@@ -272,18 +274,28 @@ public:
     void begin_sequence(const std::string &name);
     void end_sequence();
 
+	void add_key_value_string(const std::string &name, const std::string &value);
+	void add_key_value_u64(const std::string &name, u64 value);
+	void add_key_value_vec3(const std::string &name, const glm::vec3 &value);
+	void add_key_value_vec4(const std::string &name, const glm::vec4 &value);
+	void add_key_value_quat(const std::string &name, const glm::quat &value);
+	void add_key_value_float(const std::string &name, const f32 &value);
+	void add_key_value_int(const std::string &name, const i32 &value);
+
     template<typename T>
     void add_key_value(const char *key_name, T value)
     {
-        m_emitter << YAML::Key << key_name << YAML::Value << value;
+        get_emiiter() << YAML::Key << key_name << YAML::Value << value;
     }
 
     void serialize();
     static YAML::Node deserialize(const std::filesystem::path &filepath);
 
+	YAML::Emitter &get_emiiter() const;
+
     const std::filesystem::path &get_filepath() const;
 
 private:
-    YAML::Emitter m_emitter;
-    std::filesystem::path m_filepath;
+	class Impl;
+	Impl *m_impl;
 };

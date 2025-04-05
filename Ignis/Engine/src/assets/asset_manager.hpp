@@ -31,8 +31,26 @@ public:
     template<typename T>
     static Ref<T> get_asset(AssetHandle handle)
     {
+        if (!asset_map.contains(handle))
+            return;
+        
         Ref<Asset> asset = asset_map.at(handle).asset;
         return std::static_pointer_cast<T>(asset);
+    }
+
+    static void remove_asset(AssetHandle handle)
+    {
+        if (!asset_map.contains(handle))
+        {
+            LOG_ERROR("Failed to remove asset: {}", (u64)handle);
+            return;
+        }
+
+        Ref<Asset> asset = asset_map.at(handle).asset;
+        if (asset)
+        {
+            asset->destroy();
+        }
     }
 
     static AssetMap asset_map;

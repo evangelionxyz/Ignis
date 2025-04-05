@@ -2,7 +2,7 @@
 #include "filedialog.hpp"
 #include <imgui_internal.h>
 
-IgnisEditor *IgnisEditor::s_instance = nullptr;;
+IgnisEditor *IgnisEditor::s_instance = nullptr;
 
 IgnisEditor::IgnisEditor()
     : Application("Ignis")
@@ -12,17 +12,50 @@ IgnisEditor::IgnisEditor()
     Renderer::create(RendererAPI::OPENGL);
 
     m_window = Window(m_name, 1280, 840);
+
+    switch (Renderer::get_api()) 
+    {
+    case RendererAPI::OPENGL: 
+    {
+        // Load OpenGL
+        m_gl_context = SDL_GL_CreateContext(m_window.get_native_window());
+
+        if (!m_gl_context) {
+            LOG_ERROR("Failed to initialize OpenGL Context");
+            return;
+        }
+
+        gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
+        const char *gl_version = reinterpret_cast<const char *>(glGetString(GL_VERSION));
+        const char *gl_vendor = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
+        LOG_INFO("OpenGL Info Editor: ");
+        LOG_INFO("    version       : {}", gl_version);
+        LOG_INFO("    vendor        : {}", gl_vendor);
+        break;
+    }
+    case RendererAPI::VULKAN: {
+        break;
+    }
+    }
+
+    m_window.set_gl_context(m_gl_context);
+
+    create_imgui_context();
+    m_imgui_layer.set_context(m_imgui_context);
+    m_imgui_layer.init(&m_window);
+
     m_window.set_event_callback(BIND_CLASS_EVENT_FN(IgnisEditor::on_event));
 
-    m_imgui_layer = ImGuiLayer(&m_window);
+    m_window.set_gl_context(m_gl_context);
 
-    const u32 vertex_shader = GLShader::create_shader("Resources/Shaders/default.vert.glsl", SHADER_TYPE_VERTEX);
-    const u32 fragment_shader = GLShader::create_shader("Resources/Shaders/default.frag.glsl", SHADER_TYPE_FRAGMENT);
+    const u32 vertex_shader = m_shader.create_shader("Resources/Shaders/default.vert.glsl", SHADER_TYPE_VERTEX);
+    const u32 fragment_shader = m_shader.create_shader("Resources/Shaders/default.frag.glsl", SHADER_TYPE_FRAGMENT);
 
     m_shader.create_program();
     m_shader.compile(vertex_shader);
     m_shader.compile(fragment_shader);
     m_shader.link();
+
 
     // framebuffer
     FramebufferSpec spec;
@@ -53,18 +86,36 @@ IgnisEditor::IgnisEditor()
     };
 
     m_vertex_array = GLVertexArray::create();
+
     m_vertex_buffer = GLVertexBuffer::create(vertices, sizeof(vertices));
-    m_vertex_buffer->set_layout({
-        {ShaderDataType_Float2, "position"},
-        {ShaderDataType_Float2, "texture_coord"}
+
+
+    BufferLayout layout = BufferLayout({
+        BufferElement(ShaderDataType_Float2, "position"),
+        BufferElement(ShaderDataType_Float2, "texture_coord")
     });
+    m_vertex_buffer->set_layout(layout);
+    layout.destroy();
+
     m_vertex_array->add_vertex_buffer(m_vertex_buffer);
 
     Ref<GLIndexBuffer> index_buffer = GLIndexBuffer::create(indices, sizeof(indices) / sizeof(u32));
     m_vertex_array->set_index_buffer(index_buffer);
 
     Renderer::init();
+
     init();
+}
+
+void IgnisEditor::create_imgui_context()
+{
+    IMGUI_CHECKVERSION();
+    m_imgui_context = ImGui::CreateContext();
+}
+
+void IgnisEditor::destroy_imgui_context()
+{
+    ImGui::DestroyContext(m_imgui_context);
 }
 
 void IgnisEditor::init()
@@ -94,6 +145,9 @@ void IgnisEditor::run()
     
     while (m_window.is_running())
     {
+        m_window.set_gl_context(m_gl_context);
+        m_imgui_layer.set_context(m_imgui_context);
+
         m_window.poll_events();
 
         const f32 current_time = static_cast<f32>(SDL_GetTicks());
@@ -103,203 +157,7 @@ void IgnisEditor::run()
 
         on_update(delta_time);
         {
-            constexpr f32 TITLE_BAR_HEIGHT = 50.0f;
-
             m_imgui_layer.begin_render();
-            {
-                //main dockspace
-                ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse
-                    | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus |
-                    ImGuiWindowFlags_NoNavFocus;
-
-                const ImGuiViewport* viewport = ImGui::GetMainViewport();
-                ImGui::SetNextWindowPos(viewport->Pos);
-                ImGui::SetNextWindowSize(viewport->Size);
-                ImGui::SetNextWindowViewport(viewport->ID);
-
-                ImGui::Begin("main_dockspace", nullptr, window_flags);
-
-                ImGuiWindow *window = ImGui::GetCurrentWindow();
-                window->DC.LayoutType = ImGuiLayoutType_Horizontal;
-                window->DC.NavLayerCurrent = ImGuiNavLayer_Menu;
-                
-                ImDrawList *draw_list = ImGui::GetWindowDrawList();
-                ImVec2 min_pos = viewport->Pos;
-                ImVec2 max_pos = ImVec2(viewport->Pos.x + viewport->Size.x, viewport->Pos.y + TITLE_BAR_HEIGHT);
-
-                // title bar background
-                draw_list->AddRectFilled(min_pos, max_pos, IM_COL32(40, 40, 40, 255));
-
-                // Window title text
-                ImVec2 text_pos = ImVec2(min_pos.x + 10, min_pos.y + 7);
-                const char* titlebar_text = "Ignis Editor";
-                draw_list->AddText(text_pos, IM_COL32(255, 255, 255, 255), titlebar_text);
-                ImVec2 titlebar_text_size = ImGui::CalcTextSize(titlebar_text);
-
-
-                // ==================================
-                // ============ Menu bar ============
-
-                // Menu item properties
-                f32 menu_spacing = 4.0f;
-                
-                ImU32 menu_bg_color = IM_COL32(50, 50, 50, 0);
-                ImU32 menu_hover_color = IM_COL32(70, 70, 70, 255);
-                ImU32 text_color = IM_COL32(255, 255, 255, 255);
-
-                // Menu positions
-                const char *menu_text_file = "File";
-                f32 text_width = ImGui::CalcTextSize(menu_text_file).x;
-                ImVec2 menu_size = {text_width * 2.0f, 25.0f};
-                ImVec2 menu_pos_file = ImVec2(text_pos.x + titlebar_text_size.x + menu_spacing, min_pos.y + 2.0f);
-                bool file_hovered = ImGui::IsMouseHoveringRect(menu_pos_file, ImVec2(menu_pos_file.x + menu_size.x, menu_pos_file.y + menu_size.y));
-                draw_list->AddRectFilled(menu_pos_file, ImVec2(menu_pos_file.x + menu_size.x, menu_pos_file.y + menu_size.y), file_hovered ? menu_hover_color : menu_bg_color);
-                draw_list->AddText(ImVec2(menu_pos_file.x + 10, menu_pos_file.y + 5), text_color, menu_text_file);
-
-                const char *menu_text_edit = "Edit";
-                text_width = ImGui::CalcTextSize(menu_text_edit).x;
-                menu_size = {text_width * 2.0f, 25.0f};
-                ImVec2 menu_pos_edit = ImVec2(menu_pos_file.x + menu_size.x, min_pos.y + 2.0f);
-                bool edit_hovered = ImGui::IsMouseHoveringRect(menu_pos_edit, ImVec2(menu_pos_edit.x + menu_size.x, menu_pos_edit.y + menu_size.y));
-                draw_list->AddRectFilled(menu_pos_edit, ImVec2(menu_pos_edit.x + menu_size.x, menu_pos_edit.y + menu_size.y), edit_hovered ? menu_hover_color : menu_bg_color);
-                draw_list->AddText(ImVec2(menu_pos_edit.x + 10, menu_pos_edit.y + 5), text_color, menu_text_edit);
-
-                if (file_hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                {
-                    ImGui::OpenPopup("FileMenuPopup");
-                }
-
-                if (edit_hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                {
-                    ImGui::OpenPopup("EditMenuPopup");
-                }
-
-                if (ImGui::BeginPopup("FileMenuPopup"))
-                {
-                    if (ImGui::MenuItem("Save Scene"))
-                    {
-                        save_scene();
-                    }
-
-                    if (ImGui::MenuItem("Save Scene As"))
-                    {
-                        m_current_scene_path = filedialog_open_file("Ignis Scene (*.ixscene)\0*.ixscene\0");
-                        if (!m_current_scene_path.empty())
-                        {
-                            save_scene(m_current_scene_path);
-                        }
-                    }
-
-                    if (ImGui::MenuItem("Open Scene"))
-                    {
-                        m_current_scene_path = filedialog_open_file("Ignis Scene (*.ixscene)\0*.ixscene\0");
-                        if (!m_current_scene_path.empty())
-                        {
-                            load_scene(m_current_scene_path);
-                        }
-                    }
-
-                    if (ImGui::MenuItem("Exit"))
-                    {
-                        m_window.close_window();
-                    }
-
-                    ImGui::EndPopup();
-                }
-
-                // Edit Menu Popup
-                if (ImGui::BeginPopup("EditMenuPopup"))
-                {
-                    if (ImGui::MenuItem("Undo"))
-                    {
-                    }
-
-                    if (ImGui::MenuItem("Redo"))
-                    {
-                    }
-
-                    if (ImGui::MenuItem("Preferences"))
-                    {
-                    }
-
-                    ImGui::EndPopup();
-                }
-#if 0
-
-                // buttons position
-                f32 button_size = 24.0f;
-                f32 button_spacing = 8.0f;
-                ImVec2 close_btn_pos = ImVec2(max_pos.x - button_size - button_spacing, min_pos.y + 5);
-                ImVec2 max_btn_pos = ImVec2(close_btn_pos.x - button_size - button_spacing, min_pos.y + 5);
-                ImVec2 min_btn_pos = ImVec2(max_btn_pos.x - button_size - button_spacing, min_pos.y + 5);
-
-                ImGui::SetCursorScreenPos(min_btn_pos);
-                if (ImGui::ImageButton("_", m_icons["minimize"]->get_id(), {button_size, button_size}, {0.0f, 0.0f}, {1.0f, 1.0f}, {0.3f, 0.3f, 0.3f, 1.0f}))
-                {
-                    SDL_MinimizeWindow(m_window.get_native_window());
-                }
-
-                ImGui::SetCursorScreenPos(max_btn_pos);
-                SDL_WindowFlags sdl_window_flags = SDL_GetWindowFlags(m_window.get_native_window());
-                bool window_maximized = sdl_window_flags & SDL_WINDOW_MAXIMIZED;
-                if (ImGui::ImageButton("□", window_maximized ? m_icons["collapse_content"]->get_id() : m_icons["expand_content"]->get_id(), {button_size, button_size}, {0.0f, 0.0f}, {1.0f, 1.0f}, {0.9f, 0.4f, 0.0f, 1.0f}))
-                {
-                    SDL_WindowFlags flags = SDL_GetWindowFlags(m_window.get_native_window());
-                    window_maximized ? SDL_RestoreWindow(m_window.get_native_window()) : SDL_MaximizeWindow(m_window.get_native_window());
-                }
-
-                ImGui::SetCursorScreenPos(close_btn_pos);
-                if (ImGui::ImageButton("X", m_icons["close"]->get_id(), {button_size, button_size}, {0.0f, 0.0f}, {1.0f, 1.0f}, {0.9f, 0.0f, 0.0f, 1.0f}))
-                {
-                    m_window.close_window();
-                }
-
-                // drag to move window
-                static bool is_dragging = false;
-                static ImVec2 drag_start_pos;
-                static SDL_Point window_start_pos;
-
-                ImGui::SetCursorScreenPos(min_pos);
-                ImGui::InvisibleButton("TitleBarDrag", ImVec2(viewport->Size.x - 3 * (button_size + button_spacing), TITLE_BAR_HEIGHT));
-            
-                if (ImGui::IsItemActive() && !is_dragging && !menu_hovered)
-                {
-                    is_dragging = true;
-                    drag_start_pos = ImGui::GetMousePos();
-                    i32 win_x, win_y;
-                    m_window.get_position(&win_x, &win_y);
-                    window_start_pos = { win_x, win_y };
-                }
-
-                if (is_dragging)
-                {
-                    if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
-                    {
-                        ImVec2 mouse_pos = ImGui::GetMousePos();
-                        ImVec2 mouse_delta = ImVec2(mouse_pos.x - drag_start_pos.x, mouse_pos.y - drag_start_pos.y);
-                        m_window.set_position(window_start_pos.x + static_cast<i32>(mouse_delta.x),
-                                              window_start_pos.y + static_cast<i32>(mouse_delta.y));
-                    }
-                    else
-                    {
-                        is_dragging = false;
-                    }
-                }
-#endif
-                // dockspace
-                ImGui::SetCursorScreenPos({viewport->Pos.x, viewport->Pos.y + TITLE_BAR_HEIGHT});
-                ImGui::DockSpace(ImGui::GetID("main_dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
-                
-                {
-                    // scene dockspace
-                    ImGuiWindowFlags dockspace_flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoScrollbar;
-                    ImGui::Begin("Scene", nullptr, dockspace_flags);
-                    ImGui::DockSpace(ImGui::GetID("scene_dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
-                    ImGui::End(); // end scene dockspace
-                }
-                
-                ImGui::End(); // end dockspace
-            }
 
             on_gui_render(delta_time);
 
@@ -385,9 +243,9 @@ void IgnisEditor::on_update(f32 delta_time)
         m_scene->get_registry().view<Transform, Sprite>().each([&](auto entity, Transform &transform, Sprite &sprite)
         {
             m_shader.set_uniform_mat4("u_model_matrix", transform.get_world_transform());
-            m_shader.set_uniform_vec4("u_color", sprite.color);
+            m_shader.set_uniform_vec4("u_color", sprite.get_color());
 
-            Ref<Texture> texture = Renderer::white_texture;//sprite.texture->bind(0);
+            Ref<Texture> texture = Renderer::get_white_texture();//sprite.texture->bind(0);
             texture->bind(0);
             m_shader.set_uniform_int("u_texture", texture->get_index());
 
@@ -403,6 +261,227 @@ void IgnisEditor::on_update(f32 delta_time)
 
 void IgnisEditor::on_gui_render(f32 delta_time)
 {
+    constexpr f32 TITLE_BAR_HEIGHT = 50.0f;
+
+    //main dockspace
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse
+        | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoNavFocus;
+
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->Pos);
+    ImGui::SetNextWindowSize(viewport->Size);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    ImGui::Begin("main_dockspace", nullptr, window_flags);
+
+    ImGuiWindow *window = ImGui::GetCurrentWindow();
+    window->DC.LayoutType = ImGuiLayoutType_Horizontal;
+    window->DC.NavLayerCurrent = ImGuiNavLayer_Menu;
+    
+    ImDrawList *draw_list = ImGui::GetWindowDrawList();
+    ImVec2 min_pos = viewport->Pos;
+    ImVec2 max_pos = ImVec2(viewport->Pos.x + viewport->Size.x, viewport->Pos.y + TITLE_BAR_HEIGHT);
+
+    // title bar background
+    draw_list->AddRectFilled(min_pos, max_pos, IM_COL32(40, 40, 40, 255));
+
+    // Window title text
+    ImVec2 text_pos = ImVec2(min_pos.x + 10, min_pos.y + 7);
+    const char* titlebar_text = "Ignis Editor";
+    draw_list->AddText(text_pos, IM_COL32(255, 255, 255, 255), titlebar_text);
+    ImVec2 titlebar_text_size = ImGui::CalcTextSize(titlebar_text);
+
+
+    // ==================================
+    // ============ Menu bar ============
+
+    // Menu item properties
+    f32 menu_spacing = 4.0f;
+    
+    ImU32 menu_bg_color = IM_COL32(50, 50, 50, 0);
+    ImU32 menu_hover_color = IM_COL32(70, 70, 70, 255);
+    ImU32 text_color = IM_COL32(255, 255, 255, 255);
+
+    // Menu positions
+    const char *menu_text_file = "File";
+    f32 text_width = ImGui::CalcTextSize(menu_text_file).x;
+    ImVec2 menu_size = {text_width * 2.0f, 25.0f};
+    ImVec2 menu_pos_file = ImVec2(text_pos.x + titlebar_text_size.x + menu_spacing, min_pos.y + 2.0f);
+    bool file_hovered = ImGui::IsMouseHoveringRect(menu_pos_file, ImVec2(menu_pos_file.x + menu_size.x, menu_pos_file.y + menu_size.y));
+    draw_list->AddRectFilled(menu_pos_file, ImVec2(menu_pos_file.x + menu_size.x, menu_pos_file.y + menu_size.y), file_hovered ? menu_hover_color : menu_bg_color);
+    draw_list->AddText(ImVec2(menu_pos_file.x + 10, menu_pos_file.y + 5), text_color, menu_text_file);
+
+    const char *menu_text_edit = "Edit";
+    text_width = ImGui::CalcTextSize(menu_text_edit).x;
+    menu_size = {text_width * 2.0f, 25.0f};
+    ImVec2 menu_pos_edit = ImVec2(menu_pos_file.x + menu_size.x, min_pos.y + 2.0f);
+    bool edit_hovered = ImGui::IsMouseHoveringRect(menu_pos_edit, ImVec2(menu_pos_edit.x + menu_size.x, menu_pos_edit.y + menu_size.y));
+    draw_list->AddRectFilled(menu_pos_edit, ImVec2(menu_pos_edit.x + menu_size.x, menu_pos_edit.y + menu_size.y), edit_hovered ? menu_hover_color : menu_bg_color);
+    draw_list->AddText(ImVec2(menu_pos_edit.x + 10, menu_pos_edit.y + 5), text_color, menu_text_edit);
+
+    if (file_hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+    {
+        ImGui::OpenPopup("FileMenuPopup");
+    }
+
+    if (edit_hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+    {
+        ImGui::OpenPopup("EditMenuPopup");
+    }
+
+    if (ImGui::BeginPopup("FileMenuPopup"))
+    {
+        if (ImGui::MenuItem("New Project"))
+        {
+
+        }
+
+        if (ImGui::MenuItem("Open Project"))
+        {
+
+        }
+
+        if (ImGui::MenuItem("Close Project"))
+        {
+
+        }
+
+        ImGui::Separator();
+        if (ImGui::MenuItem("New Scene"))
+        {
+            if (m_scene)
+                m_scene->destroy();
+            
+            m_scene = Scene::create("new scene");
+            m_scene_hierarchy_panel->set_scene(m_scene.get());
+        }
+
+        if (ImGui::MenuItem("Save Scene"))
+        {
+            save_scene();
+        }
+
+        if (ImGui::MenuItem("Save Scene As"))
+        {
+            m_current_scene_path = filedialog_open_file("Ignis Scene (*.ixscene)\0*.ixscene\0");
+            if (!m_current_scene_path.empty())
+            {
+                save_scene(m_current_scene_path);
+            }
+        }
+
+        if (ImGui::MenuItem("Open Scene"))
+        {
+            m_current_scene_path = filedialog_open_file("Ignis Scene (*.ixscene)\0*.ixscene\0");
+            if (!m_current_scene_path.empty())
+            {
+                load_scene(m_current_scene_path);
+            }
+        }
+
+        ImGui::Separator();
+        if (ImGui::MenuItem("Exit"))
+        {
+            m_window.close_window();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    // Edit Menu Popup
+    if (ImGui::BeginPopup("EditMenuPopup"))
+    {
+        if (ImGui::MenuItem("Undo"))
+        {
+        }
+
+        if (ImGui::MenuItem("Redo"))
+        {
+        }
+
+        if (ImGui::MenuItem("Preferences"))
+        {
+        }
+
+        ImGui::EndPopup();
+    }
+#if 0
+
+    // buttons position
+    f32 button_size = 24.0f;
+    f32 button_spacing = 8.0f;
+    ImVec2 close_btn_pos = ImVec2(max_pos.x - button_size - button_spacing, min_pos.y + 5);
+    ImVec2 max_btn_pos = ImVec2(close_btn_pos.x - button_size - button_spacing, min_pos.y + 5);
+    ImVec2 min_btn_pos = ImVec2(max_btn_pos.x - button_size - button_spacing, min_pos.y + 5);
+
+    ImGui::SetCursorScreenPos(min_btn_pos);
+    if (ImGui::ImageButton("_", m_icons["minimize"]->get_id(), {button_size, button_size}, {0.0f, 0.0f}, {1.0f, 1.0f}, {0.3f, 0.3f, 0.3f, 1.0f}))
+    {
+        SDL_MinimizeWindow(m_window.get_native_window());
+    }
+
+    ImGui::SetCursorScreenPos(max_btn_pos);
+    SDL_WindowFlags sdl_window_flags = SDL_GetWindowFlags(m_window.get_native_window());
+    bool window_maximized = sdl_window_flags & SDL_WINDOW_MAXIMIZED;
+    if (ImGui::ImageButton("□", window_maximized ? m_icons["collapse_content"]->get_id() : m_icons["expand_content"]->get_id(), {button_size, button_size}, {0.0f, 0.0f}, {1.0f, 1.0f}, {0.9f, 0.4f, 0.0f, 1.0f}))
+    {
+        SDL_WindowFlags flags = SDL_GetWindowFlags(m_window.get_native_window());
+        window_maximized ? SDL_RestoreWindow(m_window.get_native_window()) : SDL_MaximizeWindow(m_window.get_native_window());
+    }
+
+    ImGui::SetCursorScreenPos(close_btn_pos);
+    if (ImGui::ImageButton("X", m_icons["close"]->get_id(), {button_size, button_size}, {0.0f, 0.0f}, {1.0f, 1.0f}, {0.9f, 0.0f, 0.0f, 1.0f}))
+    {
+        m_window.close_window();
+    }
+
+    // drag to move window
+    static bool is_dragging = false;
+    static ImVec2 drag_start_pos;
+    static SDL_Point window_start_pos;
+
+    ImGui::SetCursorScreenPos(min_pos);
+    ImGui::InvisibleButton("TitleBarDrag", ImVec2(viewport->Size.x - 3 * (button_size + button_spacing), TITLE_BAR_HEIGHT));
+
+    if (ImGui::IsItemActive() && !is_dragging && !menu_hovered)
+    {
+        is_dragging = true;
+        drag_start_pos = ImGui::GetMousePos();
+        i32 win_x, win_y;
+        m_window.get_position(&win_x, &win_y);
+        window_start_pos = { win_x, win_y };
+    }
+
+    if (is_dragging)
+    {
+        if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+        {
+            ImVec2 mouse_pos = ImGui::GetMousePos();
+            ImVec2 mouse_delta = ImVec2(mouse_pos.x - drag_start_pos.x, mouse_pos.y - drag_start_pos.y);
+            m_window.set_position(window_start_pos.x + static_cast<i32>(mouse_delta.x),
+                                    window_start_pos.y + static_cast<i32>(mouse_delta.y));
+        }
+        else
+        {
+            is_dragging = false;
+        }
+    }
+#endif
+    // dockspace
+    ImGui::SetCursorScreenPos({viewport->Pos.x, viewport->Pos.y + TITLE_BAR_HEIGHT});
+    ImGui::DockSpace(ImGui::GetID("main_dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+    
+    {
+        // scene dockspace
+        ImGuiWindowFlags dockspace_flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoScrollbar;
+        ImGui::Begin("Scene", nullptr, dockspace_flags);
+        ImGui::DockSpace(ImGui::GetID("scene_dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+        ImGui::End(); // end scene dockspace
+    }
+    
+    ImGui::End(); // end dockspace
+
     ImGui::ShowDemoWindow();
     draw_viewport();
 
@@ -460,6 +539,8 @@ const Ref<Texture> &IgnisEditor::get_icons(const std::string &name)
 
 void IgnisEditor::destroy()
 {
+    destroy_imgui_context();
+
     if (m_scene)
         m_scene->destroy();
 

@@ -3,16 +3,24 @@
 #include <fstream>
 #include <sstream>
 
-static std::string read_file(const std::string &filepath)
+extern "C"
 {
+
+IGNIS_API const char *read_file(const char *filepath)
+{
+    static std::string content;
     std::fstream file(filepath, std::ios::in);
     if (file.is_open())
     {
         std::stringstream ss;
         ss << file.rdbuf();
-
         file.close();
-        return ss.str();
+
+        content = ss.str();
+
+        return content.c_str();
     }
     return "";
+}
+
 }

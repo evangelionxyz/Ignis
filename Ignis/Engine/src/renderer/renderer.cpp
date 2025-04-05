@@ -5,8 +5,8 @@
 #include "core/logger.hpp"
 
 RendererAPI Renderer::m_api;
-Ref<Texture> Renderer::white_texture;
-Ref<Texture> Renderer::black_texture;
+static Ref<Texture> s_white_texture;
+static Ref<Texture> s_black_texture;
 
 void Renderer::create(const RendererAPI api)
 {
@@ -25,14 +25,16 @@ void Renderer::init()
     texture_spec.height = 1;
     texture_spec.format = TEXTURE_FORMAT_RGBA;
 
-    white_texture = Texture::create(texture_spec, Buffer(&white_texture_data, sizeof(white_texture_data)));
-    black_texture = Texture::create(texture_spec, Buffer(&black_texture_data, sizeof(black_texture_data)));
+    s_white_texture = Texture::create(texture_spec, Buffer(&white_texture_data, sizeof(white_texture_data)));
+    s_black_texture = Texture::create(texture_spec, Buffer(&black_texture_data, sizeof(black_texture_data)));
+
+    GL_CHECK();
 }
 
 void Renderer::shutdown()
 {
-    if (white_texture) white_texture->destroy();
-    if (black_texture) black_texture->destroy();
+    if (s_white_texture) s_white_texture->destroy();
+    if (s_black_texture) s_black_texture->destroy();
 }
 
 RendererAPI Renderer::get_api()
@@ -40,3 +42,14 @@ RendererAPI Renderer::get_api()
     LOG_ASSERT(m_api != RendererAPI::UNKNOWN, "[Renderer] RendererAPI must be set");
     return m_api;
 }
+
+Ref<Texture> Renderer::get_white_texture()
+{
+    return s_white_texture;
+}
+
+Ref<Texture> Renderer::get_black_texture()
+{
+    return s_black_texture;
+}
+

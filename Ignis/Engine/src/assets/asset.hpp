@@ -1,4 +1,5 @@
 #pragma once
+
 #include "core/object.hpp"
 #include "core/uuid.hpp"
 
@@ -11,21 +12,12 @@ enum AssetType
     ASSET_TYPE_PROJECT
 };
 
-static std::string get_asset_type_string(AssetType type)
-{
-    switch(type)
-    {
-    case ASSET_TYPE_TEXTURE: return "Asset_Texture";
-    case ASSET_TYPE_AUDIO: return "Asset_Audio";
-    case ASSET_TYPE_SCENE: return "Asset_Scene";
-    case ASSET_TYPE_PROJECT: return "Asset_Project";
-    default:
-        return "Invalid";
-    }
+extern "C" {
+IGNIS_API const char *get_asset_type_string(AssetType type);
 }
 
 using AssetHandle = UUID;
-class Asset : public Object {
+class IGNIS_API Asset : public Object {
 public:
     Asset() = default;
     Asset(AssetHandle handle);

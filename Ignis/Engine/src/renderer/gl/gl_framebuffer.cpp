@@ -44,63 +44,84 @@ static void attach_depth_texture_2d(u32 texture_id, const GLenum format, GLenum 
     glFramebufferTexture2D(GL_FRAMEBUFFER, attachment_type, texture_2d_target(multisample), texture_id, 0);
 }
 
-GLFramebuffer::GLFramebuffer(const FramebufferSpec &spec)
-    : m_spec(spec)
+class GLFramebuffer::Impl
 {
-    LOG_ASSERT(m_spec.width > 0 && m_spec.height > 0, "[Framebuffer] invalid size");
+public:
+    u32 id = 0;
+    u32 depth_attachment = 0;
+    u32 color_attachment_index = 0;
 
-    for (auto attachment : m_spec.attachments.texture_attachments) {
-        is_depth_format(attachment.format)
-        ? m_depth_attachment_spec = attachment
-        : m_color_attachment_specs.emplace_back(attachment);
+    std::vector<FramebufferTextureSpec> color_attachment_specs;
+    FramebufferTextureSpec depth_attachment_spec{};
+
+    std::vector<u32> color_attachments;
+    FramebufferSpec spec;
+
+    GLFramebuffer::Impl(const FramebufferSpec &specification)
+        : spec(specification)
+    {
     }
+};
+
+GLFramebuffer::GLFramebuffer(const FramebufferSpec &spec)
+    : m_impl(new GLFramebuffer::Impl(spec))
+{
+    LOG_ASSERT(m_impl->spec.width > 0 && m_impl->spec.height > 0, "[Framebuffer] invalid size");
+
+    for (auto attachment : m_impl->spec.attachments.get_attachments()) {
+        is_depth_format(attachment.format)
+        ? m_impl->depth_attachment_spec = attachment
+        : m_impl->color_attachment_specs.emplace_back(attachment);
+    }
+    GL_CHECK();
+
 
     invalidate();
 }
 
 void GLFramebuffer::invalidate()
 {
-    if (m_id) {
+    if (m_impl->id) {
         destroy();
     }
 
-    glCreateFramebuffers(1, &m_id);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_id);
+    glCreateFramebuffers(1, &m_impl->id);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_impl->id);
 
-    const bool multisample = m_spec.samples > 1;
+    const bool multisample = m_impl->spec.samples > 1;
 
     // process color attachments
-    if (!m_color_attachment_specs.empty()) {
+    if (!m_impl->color_attachment_specs.empty()) {
 
         // create textures
-        m_color_attachments.resize(m_color_attachment_specs.size());
-        glCreateTextures(texture_2d_target(multisample), m_color_attachments.size(), m_color_attachments.data());
-        for (size_t i = 0; i < m_color_attachments.size(); i++) {
-            glBindTexture(texture_2d_target(multisample), m_color_attachments[i]);
-            const GLenum format = get_gl_texture_format(m_color_attachment_specs[i].format);
-            const i32 internal_format =  get_gl_texture_internal_format(m_color_attachment_specs[i].format);
-            attach_color_texture_2d(m_color_attachments[i], internal_format, format, m_spec, i);
+        m_impl->color_attachments.resize(m_impl->color_attachment_specs.size());
+        glCreateTextures(texture_2d_target(multisample), m_impl->color_attachments.size(), m_impl->color_attachments.data());
+        for (size_t i = 0; i < m_impl->color_attachments.size(); i++) {
+            glBindTexture(texture_2d_target(multisample), m_impl->color_attachments[i]);
+            const GLenum format = get_gl_texture_format(m_impl->color_attachment_specs[i].format);
+            const i32 internal_format =  get_gl_texture_internal_format(m_impl->color_attachment_specs[i].format);
+            attach_color_texture_2d(m_impl->color_attachments[i], internal_format, format, m_impl->spec, i);
         }
     }
 
     // process depth attachment
-    if (m_depth_attachment_spec.format != TEXTURE_FORMAT_UNKNOWN) {
+    if (m_impl->depth_attachment_spec.format != TEXTURE_FORMAT_UNKNOWN) {
         // create the texture
-        glCreateTextures(texture_2d_target(multisample), 1, &m_depth_attachment);
-        glBindTexture(texture_2d_target(multisample), m_depth_attachment);
-        const GLenum format = get_gl_texture_format(m_depth_attachment_spec.format);
-        const GLenum attachment_type = get_gl_attachment_type(m_depth_attachment_spec.format);
-        attach_depth_texture_2d(m_depth_attachment, format, attachment_type, m_spec);
+        glCreateTextures(texture_2d_target(multisample), 1, &m_impl->depth_attachment);
+        glBindTexture(texture_2d_target(multisample), m_impl->depth_attachment);
+        const GLenum format = get_gl_texture_format(m_impl->depth_attachment_spec.format);
+        const GLenum attachment_type = get_gl_attachment_type(m_impl->depth_attachment_spec.format);
+        attach_depth_texture_2d(m_impl->depth_attachment, format, attachment_type, m_impl->spec);
     }
 
-   if (!m_color_attachments.empty()) {
+   if (!m_impl->color_attachments.empty()) {
        constexpr GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
        glDrawBuffers(4, buffers);
    }
 
-    if(m_color_attachments.empty())
+    if(m_impl->color_attachments.empty())
         glDrawBuffer(GL_NONE);
-    if (m_spec.read_buffer == false)
+    if (m_impl->spec.read_buffer == false)
         glReadBuffer(GL_NONE);
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -113,14 +134,14 @@ void GLFramebuffer::resize(u32 width, u32 height)
         LOG_ERROR("[Framebuffer] invalid size {0} {1}", width, height);
         return;
     }
-    m_spec.width = static_cast<i32>(width);
-    m_spec.height = static_cast<i32>(height);
+    m_impl->spec.width = static_cast<i32>(width);
+    m_impl->spec.height = static_cast<i32>(height);
     invalidate();
 }
 
 i32 GLFramebuffer::read_pixel(const u32 attachment_index, const i32 x, const i32 y) const
 {
-    if (attachment_index >= m_color_attachments.size()) {
+    if (attachment_index >= m_impl->color_attachments.size()) {
         i32 pixel_data;
         glReadBuffer(GL_COLOR_ATTACHMENT0 + attachment_index);
         glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, &pixel_data);
@@ -131,22 +152,32 @@ i32 GLFramebuffer::read_pixel(const u32 attachment_index, const i32 x, const i32
 
 void GLFramebuffer::destroy()
 {
-    if (m_id != 0) {
-        glDeleteFramebuffers(1, &m_id);
-        LOG_TRACE("[Framebuffer] {} destroyed ", m_id);
+    if (m_impl->id != 0) {
+        glDeleteFramebuffers(1, &m_impl->id);
+        LOG_TRACE("[Framebuffer] {} destroyed ", m_impl->id);
     }
-    glDeleteTextures(m_color_attachments.size(), m_color_attachments.data());
-    if (m_depth_attachment != 0) {
-        glDeleteTextures(1, &m_depth_attachment);
-        m_depth_attachment = 0;
+
+    glDeleteTextures(m_impl->color_attachments.size(), m_impl->color_attachments.data());
+    if (m_impl->depth_attachment != 0) {
+        glDeleteTextures(1, &m_impl->depth_attachment);
+        m_impl->depth_attachment = 0;
     }
-    m_color_attachments.clear();
+
+    m_impl->color_attachments.clear();
+
+    GL_CHECK();
+
+    //m_impl->spec.attachments.destroy();
 }
 
 void GLFramebuffer::bind() const
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, m_id);
-    glViewport(0, 0, m_spec.width, m_spec.height);
+    GL_CHECK();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_impl->id);
+    glViewport(0, 0, m_impl->spec.width, m_impl->spec.height);
+
+    GL_CHECK();
 }
 
 void GLFramebuffer::unbind()
@@ -156,5 +187,5 @@ void GLFramebuffer::unbind()
 
 const u32 GLFramebuffer::get_id() const
 {
-    return m_id;
+    return m_impl->id;
 }

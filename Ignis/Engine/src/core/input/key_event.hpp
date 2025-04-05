@@ -3,7 +3,7 @@
 #include "event.hpp"
 #include "key_codes.hpp"
 
-class KeyEvent : public Event
+class IGNIS_API KeyEvent : public Event
 {
 public:
 
@@ -22,7 +22,7 @@ protected:
 	KeyModCode m_key_mod_code;
 };
 
-class KeyPressedEvent : public KeyEvent
+class IGNIS_API KeyPressedEvent : public KeyEvent
 {
 public:
 	KeyPressedEvent(const KeyCode keycode, const KeyModCode keymod, const u16 repeatCount)
@@ -31,12 +31,7 @@ public:
 
 	u16 get_repeat_count() const { return m_repeat_count; }
 
-	std::string to_string() const override
-	{
-		std::stringstream ss;
-		ss << "KeyPressedEvent: " << (char)m_key_code << " Mod: " << m_key_mod_code << " (" << m_repeat_count << " repeats)";
-		return ss.str();
-	}
+	const char *to_string() const override;
 
 	static EventType get_static_type() { return EventType::KeyPressed; }
 	virtual EventType get_event_type() const override { return get_static_type(); }
@@ -44,37 +39,27 @@ private:
 	u16 m_repeat_count;
 };
 
-class KeyReleasedEvent : public KeyEvent
+class IGNIS_API KeyReleasedEvent : public KeyEvent
 {
 public:
 	KeyReleasedEvent(const KeyCode keycode, const KeyModCode keymod)
 		: KeyEvent(keycode, keymod) {
 	}
 
-	std::string to_string() const override
-	{
-		std::stringstream ss;
-		ss << "KeyReleasedEvent: " << (char)m_key_code << " Mod: " << m_key_mod_code;
-		return ss.str();
-	}
+	const char *to_string() const override;
 
 	static EventType get_static_type() { return EventType::KeyReleased; }
 	virtual EventType get_event_type() const override { return get_static_type(); }
 };
 
-class KeyTypedEvent : public KeyEvent
+class IGNIS_API KeyTypedEvent : public KeyEvent
 {
 public:
 	KeyTypedEvent(const KeyCode keycode)
 		: KeyEvent(keycode, IGN_KEY_UNKNOWN) {
 	}
 
-	std::string to_string() const override
-	{
-		std::stringstream ss;
-		ss << "KeyTypedEvent: " << (char)m_key_code;
-		return ss.str();
-	}
+	const char *to_string() const override;
 
 	static EventType get_static_type() { return EventType::KeyTyped; }
 	virtual EventType get_event_type() const override { return get_static_type(); }

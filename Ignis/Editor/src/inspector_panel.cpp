@@ -50,7 +50,7 @@ void InspectorPanel::draw_scene_inspector()
         if (scene->entity_has_component<ID>(selected_entity))
         {
             char buffer[256];
-            strncpy_s(buffer, id_comp.name.c_str(), sizeof(buffer));
+            strncpy_s(buffer, id_comp.name, sizeof(buffer));
 
             if (ImGui::InputText("##Tag", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue))
             {
@@ -79,8 +79,14 @@ void InspectorPanel::draw_scene_inspector()
             Transform& transform_comp = scene->entity_get_component<Transform>(selected_entity);
             if (ImGui::TreeNodeEx("tr", tree_node_flags, "Transform"))
             {
-                ImGui::DragFloat3("Position", glm::value_ptr(transform_comp.world_translation), 0.025f);
-                ImGui::DragFloat3("Scale", glm::value_ptr(transform_comp.world_scale), 0.025f);
+                glm::vec3 world_translation = transform_comp.get_world_translation();
+                glm::vec3 world_scale = transform_comp.get_world_scale();
+
+                if (ImGui::DragFloat3("Position", glm::value_ptr(world_translation), 0.025f))
+                    transform_comp.set_world_translation(world_translation);
+
+                if (ImGui::DragFloat3("Scale", glm::value_ptr(world_scale), 0.025f))
+                    transform_comp.set_world_scale(world_scale);
 
                 ImGui::TreePop();
             }
@@ -92,7 +98,10 @@ void InspectorPanel::draw_scene_inspector()
             Sprite& sp = scene->entity_get_component<Sprite>(selected_entity);
             if (ImGui::TreeNodeEx("sp", tree_node_flags, "Sprite")) 
             {
-                ImGui::ColorEdit4("Color", glm::value_ptr(sp.color), ImGuiColorEditFlags_InputRGB);
+                glm::vec4 color = sp.get_color();
+                if (ImGui::ColorEdit4("Color", glm::value_ptr(color), ImGuiColorEditFlags_InputRGB))
+                    sp.set_color(color);
+
                 ImGui::TreePop();
             }
         }

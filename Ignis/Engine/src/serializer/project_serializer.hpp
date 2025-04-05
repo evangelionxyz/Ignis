@@ -2,7 +2,7 @@
 #include "serializer.hpp"
 #include "project/project.hpp"
 
-class ProjectSerializer
+class IGNIS_API ProjectSerializer
 {
 public:
     ProjectSerializer(Ref<Project> project, const std::filesystem::path &filepath);
@@ -10,5 +10,5 @@ public:
 
     static Ref<Project> deserialize(const std::filesystem::path &filepath);
 private:
-    Ref<Project> m_project;
+    Project *m_project;
 };

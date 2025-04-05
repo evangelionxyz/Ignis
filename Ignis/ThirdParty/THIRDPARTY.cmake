@@ -22,5 +22,5 @@ add_library(imgui ${IMGUI_SOURCE})
 target_link_libraries(imgui SDL3::SDL3)
 
 # GLAD
-add_library(glad ${THIRDPARTY_DIR}/GLAD/src/glad.c)
+add_library(glad STATIC ${THIRDPARTY_DIR}/GLAD/src/glad.c)
 include_directories(glad ${THIRDPARTY_DIR}/GLAD/include)

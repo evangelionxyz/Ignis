@@ -1,8 +1,18 @@
 Scene:
-  Handle: 17497243765810158993
+  Handle: 15400679429730645927
   Name: new scene
   Entities:
-    - Entity: 13213374688932981463
+    - Entity: 2087850462154308927
+      ID:
+        Name: sprite
+      Transform:
+        World_Translation: [2.5, 0, 0]
+        World_Rotation: [0, 0, 1, 0]
+        World_Scale: [1, 1, 1]
+      Sprite:
+        Color: [1, 1, 1, 1]
+        TextureHandle: 18190717364942869093
+    - Entity: 2442725328294919704
       ID:
         Name: entity1
       Transform:
@@ -11,7 +21,8 @@ Scene:
         World_Scale: [1, 1, 1]
       Sprite:
         Color: [0, 0.02847004, 1, 1]
-    - Entity: 15302633412398054401
+        TextureHandle: 7316605836166148747
+    - Entity: 323908547857131023
       ID:
         Name: entity2
       Transform:
@@ -20,3 +31,4 @@ Scene:
         World_Scale: [1, 1, 1]
       Sprite:
         Color: [1, 0, 0, 1]
+        TextureHandle: 15146117716739448048

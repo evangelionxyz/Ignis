@@ -54,14 +54,14 @@ void SceneHierarchyPanel::draw_entity_node(const entt::entity entity, i32 index)
         | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
 
     auto _id = reinterpret_cast<void*>(static_cast<u64>(static_cast<u32>(entity)));
-    const bool opened = ImGui::TreeNodeEx(_id, flags, id_comp.name.c_str());
+    const bool opened = ImGui::TreeNodeEx(_id, flags, id_comp.name);
 
     if (ImGui::IsItemClicked()) {
         m_selected_entity = entity;
     }
 
     ImGui::PushID(_id);
-    if (ImGui::BeginPopupContextItem(id_comp.name.c_str()))
+    if (ImGui::BeginPopupContextItem(id_comp.name))
     {
         if (ImGui::MenuItem("Delete")) {
             m_scene->destroy_entity(entity);

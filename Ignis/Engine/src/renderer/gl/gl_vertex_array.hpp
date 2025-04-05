@@ -1,9 +1,11 @@
 #pragma once
+
+#include "core/base.hpp"
 #include "gl_buffer.hpp"
 #include "gl_index_buffer.hpp"
 #include "gl_vertex_buffer.hpp"
 
-class GLVertexArray final : public GLBuffer {
+class IGNIS_API GLVertexArray : public GLBuffer {
 public:
     GLVertexArray();
 
@@ -17,8 +19,7 @@ public:
     static Ref<GLVertexArray> create();
     void destroy() override;
 private:
-    std::vector<Ref<GLVertexBuffer>> m_buffers;
-    Ref<GLIndexBuffer> m_index_buffer;
-    u32 m_buffer_index = 0;
+    class Impl;
+    Impl *m_impl;
 };
 
